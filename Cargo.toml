@@ -1,0 +1,17 @@
+[package]
+name = "num-decimal"
+version = "0.0.0"
+edition = "2018"
+authors = ["Daniel Mueller <deso@posteo.net>"]
+license = "GPL-3.0-or-later"
+homepage = "https://github.com/d-e-s-o/num-decimal"
+repository = "https://github.com/d-e-s-o/num-decimal.git"
+readme = "README.md"
+description = """
+Infinite precision decimals with fair rounding and other gimmicks based
+on num-rational.
+"""
+
+[dependencies]
+num-bigint = "0.2"
+num-rational = "0.2"
