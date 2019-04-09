@@ -8,6 +8,11 @@ use std::fmt::Result as FmtResult;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
+use serde::de::Error;
+use serde::de::Unexpected;
+use serde::Deserialize;
+use serde::Deserializer;
+
 use num_bigint::BigInt;
 use num_bigint::Sign;
 use num_rational::BigRational;
@@ -62,6 +67,19 @@ impl Num {
   }
 }
 
+impl<'de> Deserialize<'de> for Num {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+  where
+    D: Deserializer<'de>,
+  {
+    let s = String::deserialize(deserializer)?;
+    let v = Num::from_str(&s)
+      .map_err(|_| Error::invalid_value(Unexpected::Str(&s), &"unable to parse string as Num"))?;
+
+    Ok(v)
+  }
+}
+
 impl Display for Num {
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
     // TODO: We probably want to format this value as a float.
@@ -103,6 +121,8 @@ impl FromStr for Num {
 mod tests {
   use super::*;
 
+  use serde_json::from_str as from_json;
+
 
   #[test]
   fn num_from_int() {
@@ -114,5 +134,13 @@ mod tests {
   fn num_from_float() {
     let num = Num::from_str("4000.32").unwrap();
     assert_eq!(num, Num::new(400032, 100));
+  }
+
+  #[test]
+  fn deserialize_json() {
+    let json = r#""37.519""#;
+    let num = from_json::<Num>(&json).unwrap();
+
+    assert_eq!(num, Num::new(37519, 1000));
   }
 }
