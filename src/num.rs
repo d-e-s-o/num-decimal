@@ -19,6 +19,42 @@ use num_bigint::Sign;
 use num_rational::BigRational;
 
 
+/// Round the given `BigRational` to the nearest integer. Rounding
+/// happens based on the Round-Half-To-Even scheme (also known as the
+/// "banker's rounding" algorithm), which rounds to the closest integer
+/// as expected but if the fractional part is exactly 1/2 (i.e.,
+/// equidistant from two integers) it rounds to the even one of the two.
+fn round_to_even(val: &BigRational) -> BigRational {
+  let zero = new_bigint(0);
+  let one = new_bigint(1);
+  let two = new_bigint(2);
+
+  let zero_ = BigRational::new(zero.clone(), one.clone());
+  let half = BigRational::new(one.clone(), two.clone());
+  // Find unsigned fractional part of rational number.
+  let mut fract = val.fract();
+  if fract < zero_ {
+    fract = &zero_ - fract
+  };
+
+  let trunc = val.trunc();
+  if fract == half {
+    // If the denominator is even round down, otherwise round up.
+    if &trunc % two == zero_ {
+      trunc
+    } else if trunc >= zero_ {
+      trunc + one
+    } else {
+      trunc - one
+    }
+  } else {
+    // BigRational::round() behaves as we want it for all cases except
+    // where the fractional part is 1/2.
+    val.round()
+  }
+}
+
+
 /// An error used for conveying parsing failures.
 #[derive(Debug)]
 pub enum ParseNumError {
@@ -75,6 +111,17 @@ impl Num {
   /// Construct a `Num` from an integer.
   pub fn from_int(val: i32) -> Self {
     Num(BigRational::from_integer(new_bigint(val)))
+  }
+
+  /// Round the given `Num` to the nearest integer.
+  ///
+  /// Rounding happens based on the Round-Half-To-Even scheme (also
+  /// known as the "bankers rounding" algorithm), which rounds to the
+  /// closest integer as expected but if the fractional part is exactly
+  /// 1/2 (i.e., equidistant from two integers) it rounds to the even
+  /// one of the two.
+  pub fn round(&self) -> Self {
+    Num(round_to_even(&self.0))
   }
 }
 
@@ -176,5 +223,41 @@ mod tests {
     let num = from_json::<Num>(&json).unwrap();
 
     assert_eq!(num, Num::new(37519, 1000));
+  }
+
+  #[test]
+  fn num_round_zero() {
+    let num = Num::from_str("0.0").unwrap().round();
+    assert_eq!(num, Num::new(0, 1));
+  }
+
+  #[test]
+  fn num_round_half() {
+    let num = Num::from_str("0.5").unwrap().round();
+    assert_eq!(num, Num::new(0, 1));
+  }
+
+  #[test]
+  fn num_round_even() {
+    let num = Num::from_str("4000.50").unwrap().round();
+    assert_eq!(num, Num::new(4000, 1));
+  }
+
+  #[test]
+  fn num_round_uneven() {
+    let num = Num::from_str("4001.50").unwrap().round();
+    assert_eq!(num, Num::new(4002, 1));
+  }
+
+  #[test]
+  fn num_neg_round_even() {
+    let num = Num::from_str("-4000.50").unwrap().round();
+    assert_eq!(num, Num::from_int(-4000));
+  }
+
+  #[test]
+  fn num_neg_round_uneven() {
+    let num = Num::from_str("-4001.50").unwrap().round();
+    assert_eq!(num, Num::from_int(-4002));
   }
 }
