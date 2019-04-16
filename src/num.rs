@@ -17,6 +17,7 @@ use serde::Deserializer;
 use num_bigint::BigInt;
 use num_bigint::Sign;
 use num_rational::BigRational;
+use num_traits::sign::Signed;
 
 
 /// Round the given `BigRational` to the nearest integer. Rounding
@@ -140,8 +141,13 @@ impl<'de> Deserialize<'de> for Num {
 
 impl Display for Num {
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
-    // TODO: We probably want to format this value as a float.
-    write!(fmt, "{}", self.0)
+    let hundred = BigRational::from_integer(new_bigint(100));
+    let raw = &hundred * &self.0.trunc();
+    let value = round_to_even(&(&hundred * &self.0)).trunc();
+    let trunc = (&value / hundred).trunc();
+    let fract = (&value - &raw).abs();
+
+    write!(fmt, "{}.{}", trunc, fract)
   }
 }
 
@@ -223,6 +229,30 @@ mod tests {
     let num = from_json::<Num>(&json).unwrap();
 
     assert_eq!(num, Num::new(37519, 1000));
+  }
+
+  #[test]
+  fn num_int_to_string() {
+    let num = Num::from_int(42);
+    assert_eq!(num.to_string(), "42.0");
+  }
+
+  #[test]
+  fn num_neg_int_to_string() {
+    let num = Num::from_int(-1337);
+    assert_eq!(num.to_string(), "-1337.0");
+  }
+
+  #[test]
+  fn num_float_to_string() {
+    let num = Num::new(49172, 1000);
+    assert_eq!(num.to_string(), "49.17");
+  }
+
+  #[test]
+  fn num_neg_float_to_string() {
+    let num = Num::new(-49178, 1000);
+    assert_eq!(num.to_string(), "-49.18");
   }
 
   #[test]
