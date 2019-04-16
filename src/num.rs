@@ -5,6 +5,7 @@ use std::error::Error as StdError;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
+use std::i32;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
@@ -45,6 +46,18 @@ impl Display for ParseNumError {
 impl StdError for ParseNumError {}
 
 
+/// Create a `BigInt` from an `i32`.
+fn new_bigint(val: i32) -> BigInt {
+  let (sign, val) = if val >= 0 {
+    (Sign::Plus, val as u32)
+  } else {
+    (Sign::Minus, -val as u32)
+  };
+
+  BigInt::from_slice(sign, &[val.to_le()])
+}
+
+
 /// An unlimited precision number type with some improvements and
 /// customizations over `BigRational`.
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -52,18 +65,16 @@ pub struct Num(BigRational);
 
 impl Num {
   /// Construct a `Num` from two integers.
-  pub fn new(numer: u32, denom: u32) -> Self {
-    let numer = BigInt::from_slice(Sign::Plus, &[numer.to_le()]);
+  pub fn new(numer: i32, denom: u32) -> Self {
+    let numer = new_bigint(numer);
     let denom = BigInt::from_slice(Sign::Plus, &[denom.to_le()]);
+
     Num(BigRational::new(numer, denom))
   }
 
   /// Construct a `Num` from an integer.
-  pub fn from_int(val: u32) -> Self {
-    Num(BigRational::from_integer(BigInt::from_slice(
-      Sign::Plus,
-      &[val.to_le()],
-    )))
+  pub fn from_int(val: i32) -> Self {
+    Num(BigRational::from_integer(new_bigint(val)))
   }
 }
 
@@ -91,9 +102,13 @@ impl FromStr for Num {
   type Err = ParseNumError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    fn parse_str(s: &str) -> Result<BigInt, ParseNumError> {
+    fn parse_istr(s: &str) -> Result<BigInt, ParseNumError> {
+      Ok(new_bigint(i32::from_str(s)?))
+    }
+
+    fn parse_str(s: &str, sign: Sign) -> Result<BigInt, ParseNumError> {
       let num = u32::from_str(s)?;
-      let num = BigInt::from_slice(Sign::Plus, &[num.to_le()]);
+      let num = BigInt::from_slice(sign, &[num.to_le()]);
       Ok(num)
     }
 
@@ -101,10 +116,10 @@ impl FromStr for Num {
     let numer = splits
       .next()
       .ok_or_else(|| ParseNumError::InvalidStrError(s.to_owned()))?;
-    let numer = parse_str(numer)?;
+    let numer = parse_istr(numer)?;
 
     if let Some(s) = splits.next() {
-      let denom = parse_str(s)?;
+      let denom = parse_str(s, numer.sign())?;
       // TODO: Should use checked_pow once it is stable.
       let power = 10u32.pow(s.len() as u32);
       let power = BigInt::from_slice(Sign::Plus, &[power.to_le()]);
@@ -131,9 +146,28 @@ mod tests {
   }
 
   #[test]
+  fn num_from_neg_int() {
+    let num = Num::from_str("-37").unwrap();
+    assert_eq!(num, Num::from_int(-37));
+  }
+
+  #[test]
+  fn num_from_min_neg_int() {
+    let min = i32::MIN + 1;
+    let num = Num::from_str(&min.to_string()).unwrap();
+    assert_eq!(num, Num::from_int(-2147483647));
+  }
+
+  #[test]
   fn num_from_float() {
     let num = Num::from_str("4000.32").unwrap();
     assert_eq!(num, Num::new(400032, 100));
+  }
+
+  #[test]
+  fn num_from_neg_float() {
+    let num = Num::from_str("-125.398").unwrap();
+    assert_eq!(num, Num::new(-125398, 1000));
   }
 
   #[test]
