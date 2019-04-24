@@ -166,8 +166,23 @@ impl FromStr for Num {
   type Err = ParseNumError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    fn parse_istr(s: &str) -> Result<BigInt, ParseNumError> {
-      Ok(new_bigint(i32::from_str(s)?))
+    fn parse_istr(s: &str) -> Result<(Sign, BigInt), ParseNumError> {
+      let val = new_bigint(i32::from_str(s)?);
+
+      // BigInt's NoSign is horrible. It represents a value being zero,
+      // but it leads to valid data being discarded silently. Work
+      // around that.
+      let sign = val.sign();
+      let sign = if sign == Sign::NoSign {
+        if s.starts_with('-') {
+          Sign::Minus
+        } else {
+          Sign::Plus
+        }
+      } else {
+        sign
+      };
+      Ok((sign, val))
     }
 
     fn parse_str(s: &str, sign: Sign) -> Result<BigInt, ParseNumError> {
@@ -180,10 +195,10 @@ impl FromStr for Num {
     let numer = splits
       .next()
       .ok_or_else(|| ParseNumError::InvalidStrError(s.to_owned()))?;
-    let numer = parse_istr(numer)?;
+    let (sign, numer) = parse_istr(numer)?;
 
     if let Some(s) = splits.next() {
-      let denom = parse_str(s, numer.sign())?;
+      let denom = parse_str(s, sign)?;
       // TODO: Should use checked_pow once it is stable.
       let power = 10u32.pow(s.len() as u32);
       let power = BigInt::from_slice(Sign::Plus, &[power.to_le()]);
@@ -227,6 +242,18 @@ mod tests {
   fn num_from_float() {
     let num = Num::from_str("4000.32").unwrap();
     assert_eq!(num, Num::new(400032, 100));
+  }
+
+  #[test]
+  fn num_from_small_float() {
+    let num = Num::from_str("0.20").unwrap();
+    assert_eq!(num, Num::new(20, 100));
+  }
+
+  #[test]
+  fn num_from_small_neg_float() {
+    let num = Num::from_str("-0.20").unwrap();
+    assert_eq!(num, Num::new(-20, 100));
   }
 
   #[test]
