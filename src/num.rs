@@ -13,6 +13,8 @@ use serde::de::Error;
 use serde::de::Unexpected;
 use serde::Deserialize;
 use serde::Deserializer;
+use serde::Serialize;
+use serde::Serializer;
 
 use num_bigint::BigInt;
 use num_bigint::Sign;
@@ -139,6 +141,15 @@ impl<'de> Deserialize<'de> for Num {
   }
 }
 
+impl Serialize for Num {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    serializer.serialize_str(&self.to_string())
+  }
+}
+
 impl Display for Num {
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
     let hundred = BigRational::from_integer(new_bigint(100));
@@ -190,6 +201,7 @@ mod tests {
   use super::*;
 
   use serde_json::from_str as from_json;
+  use serde_json::to_string as to_json;
 
 
   #[test]
@@ -229,6 +241,14 @@ mod tests {
     let num = from_json::<Num>(&json).unwrap();
 
     assert_eq!(num, Num::new(37519, 1000));
+  }
+
+  #[test]
+  fn serialize_json() {
+    let num = Num::from_str("14827.9102").unwrap();
+    let json = to_json(&num).unwrap();
+
+    assert_eq!(json, r#""14827.91""#);
   }
 
   #[test]
