@@ -6,7 +6,6 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
 use std::i32;
-use std::num::ParseIntError;
 use std::str::FromStr;
 
 use serde::de::Error;
@@ -17,8 +16,10 @@ use serde::Serialize;
 use serde::Serializer;
 
 use num_bigint::BigInt;
+use num_bigint::ParseBigIntError;
 use num_bigint::Sign;
 use num_rational::BigRational;
+use num_traits::pow::Pow;
 use num_traits::sign::Signed;
 
 
@@ -64,11 +65,11 @@ pub enum ParseNumError {
   /// A string could not get parsed as a `Num`.
   InvalidStrError(String),
   /// An integer value could not get parsed.
-  ParseIntError(ParseIntError),
+  ParseIntError(ParseBigIntError),
 }
 
-impl From<ParseIntError> for ParseNumError {
-  fn from(e: ParseIntError) -> Self {
+impl From<ParseBigIntError> for ParseNumError {
+  fn from(e: ParseBigIntError) -> Self {
     Self::ParseIntError(e)
   }
 }
@@ -166,8 +167,8 @@ impl FromStr for Num {
   type Err = ParseNumError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    fn parse_istr(s: &str) -> Result<(Sign, BigInt), ParseNumError> {
-      let val = new_bigint(i32::from_str(s)?);
+    fn parse_istr(s: &str) -> Result<(Sign, BigInt), ParseBigIntError> {
+      let val = BigInt::from_str(s)?;
 
       // BigInt's NoSign is horrible. It represents a value being zero,
       // but it leads to valid data being discarded silently. Work
@@ -186,8 +187,10 @@ impl FromStr for Num {
     }
 
     fn parse_str(s: &str, sign: Sign) -> Result<BigInt, ParseNumError> {
-      let num = u32::from_str(s)?;
-      let num = BigInt::from_slice(sign, &[num.to_le()]);
+      let num = BigInt::parse_bytes(s.as_bytes(), 10)
+        .ok_or_else(|| ParseNumError::InvalidStrError(s.to_owned()))?;
+      let (_, bytes) = num.to_bytes_le();
+      let num = BigInt::from_bytes_le(sign, &bytes);
       Ok(num)
     }
 
@@ -199,9 +202,7 @@ impl FromStr for Num {
 
     if let Some(s) = splits.next() {
       let denom = parse_str(s, sign)?;
-      // TODO: Should use checked_pow once it is stable.
-      let power = 10u32.pow(s.len() as u32);
-      let power = BigInt::from_slice(Sign::Plus, &[power.to_le()]);
+      let power = new_bigint(10).pow(s.len());
       let numer = numer * &power + denom;
       Ok(Num(BigRational::new(numer, power)))
     } else {
@@ -248,6 +249,16 @@ mod tests {
   fn num_from_small_float() {
     let num = Num::from_str("0.20").unwrap();
     assert_eq!(num, Num::new(20, 100));
+  }
+
+  #[test]
+  fn num_from_long_float() {
+    let _ = Num::from_str("207.5873333333333333").unwrap();
+  }
+
+  #[test]
+  fn num_from_long_neg_float() {
+    let _ = Num::from_str("-207.5873333333333333").unwrap();
   }
 
   #[test]
