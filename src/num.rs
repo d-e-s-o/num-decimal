@@ -187,6 +187,10 @@ impl FromStr for Num {
     }
 
     fn parse_str(s: &str, sign: Sign) -> Result<BigInt, ParseNumError> {
+      if s.starts_with('-') || s.starts_with('+') {
+        Err(ParseNumError::InvalidStrError(s.to_owned()))?;
+      }
+
       let num = BigInt::parse_bytes(s.as_bytes(), 10)
         .ok_or_else(|| ParseNumError::InvalidStrError(s.to_owned()))?;
       let (_, bytes) = num.to_bytes_le();
@@ -347,5 +351,12 @@ mod tests {
   fn num_neg_round_uneven() {
     let num = Num::from_str("-4001.50").unwrap().round();
     assert_eq!(num, Num::from_int(-4002));
+  }
+
+  #[test]
+  fn num_from_invalid_str() {
+    let _ = Num::from_str("1992.+50").unwrap_err();
+    let _ = Num::from_str("37.-4").unwrap_err();
+    let _ = Num::from_str("-44.-15").unwrap_err();
   }
 }
