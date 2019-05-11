@@ -20,6 +20,7 @@ use num_bigint::BigInt;
 use num_bigint::ParseBigIntError;
 use num_bigint::Sign;
 use num_rational::BigRational;
+use num_traits::identities::Zero;
 use num_traits::pow::Pow;
 use num_traits::sign::Signed;
 
@@ -198,13 +199,36 @@ impl Serialize for Num {
 
 impl Display for Num {
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
-    let hundred = BigRational::from_integer(new_bigint(100));
-    let raw = &hundred * &self.0.trunc();
-    let value = round_to_even(&(&hundred * &self.0)).trunc();
-    let trunc = (&value / hundred).trunc();
-    let fract = (&value - &raw).abs();
+    fn format(value: &BigRational, mut result: String, first: bool) -> String {
+      let trunc = value.trunc().to_integer();
+      result += &trunc.to_string();
 
-    write!(fmt, "{}.{}", trunc, fract)
+      let numer = value.numer();
+      let denom = value.denom();
+      let value = numer - (trunc * denom);
+
+      if value.is_zero() {
+        result
+      } else {
+        if first {
+          result += ".";
+        }
+
+        let value = BigRational::new(value * 10, denom.clone());
+        format(&value, result, false)
+      }
+    }
+
+    // We want to print out our value (which is a rational) as a
+    // floating point value, for which we need to perform some form of
+    // conversion. We do that using what is pretty much text book long
+    // division.
+    let sign = if self.0.is_negative() {
+      "-"
+    } else {
+      ""
+    };
+    write!(fmt, "{}{}", sign, format(&self.0.abs(), String::new(), true))
   }
 }
 
@@ -351,31 +375,49 @@ mod tests {
     let num = Num::from_str("14827.9102").unwrap();
     let json = to_json(&num).unwrap();
 
-    assert_eq!(json, r#""14827.91""#);
+    assert_eq!(json, r#""14827.9102""#);
+  }
+
+  #[test]
+  fn zero_to_string() {
+    let num = Num::from_int(0);
+    assert_eq!(num.to_string(), "0");
+  }
+
+  #[test]
+  fn one_to_string() {
+    let num = Num::from_int(1);
+    assert_eq!(num.to_string(), "1");
   }
 
   #[test]
   fn num_int_to_string() {
     let num = Num::from_int(42);
-    assert_eq!(num.to_string(), "42.0");
+    assert_eq!(num.to_string(), "42");
   }
 
   #[test]
   fn num_neg_int_to_string() {
     let num = Num::from_int(-1337);
-    assert_eq!(num.to_string(), "-1337.0");
+    assert_eq!(num.to_string(), "-1337");
   }
 
   #[test]
   fn num_float_to_string() {
     let num = Num::new(49172, 1000);
-    assert_eq!(num.to_string(), "49.17");
+    assert_eq!(num.to_string(), "49.172");
   }
 
   #[test]
   fn num_neg_float_to_string() {
     let num = Num::new(-49178, 1000);
-    assert_eq!(num.to_string(), "-49.18");
+    assert_eq!(num.to_string(), "-49.178");
+  }
+
+  #[test]
+  fn num_from_string_and_back() {
+    let num = Num::from_str("96886.19").unwrap();
+    assert_eq!(num.to_string(), "96886.19");
   }
 
   #[test]
