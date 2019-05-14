@@ -219,16 +219,24 @@ impl Display for Num {
       }
     }
 
+    let non_negative = !self.0.is_negative();
+    let prefix = "";
+
+    let value = if let Some(precision) = fmt.precision() {
+      let factor = new_bigint(10).pow(precision);
+      let value = &self.0 * &factor;
+      let value = round_to_even(&value).trunc() / factor;
+      value.abs()
+    } else {
+      self.0.abs()
+    };
+
     // We want to print out our value (which is a rational) as a
     // floating point value, for which we need to perform some form of
     // conversion. We do that using what is pretty much text book long
     // division.
-    let sign = if self.0.is_negative() {
-      "-"
-    } else {
-      ""
-    };
-    write!(fmt, "{}{}", sign, format(&self.0.abs(), String::new(), true))
+    let string = format(&value, String::new(), true);
+    fmt.pad_integral(non_negative, prefix, &string)
   }
 }
 
@@ -418,6 +426,24 @@ mod tests {
   fn num_from_string_and_back() {
     let num = Num::from_str("96886.19").unwrap();
     assert_eq!(num.to_string(), "96886.19");
+  }
+
+  #[test]
+  fn num_format_padded() {
+    let num = Num::new(-257, 100);
+    assert_eq!(format!("{:>8}", num), "   -2.57");
+  }
+
+  #[test]
+  fn num_format_precision() {
+    let num = Num::new(261, 100);
+    assert_eq!(format!("{:.1}", num), "2.6");
+  }
+
+  #[test]
+  fn num_format_precision_round() {
+    let num = Num::new(-259, 1000);
+    assert_eq!(format!("{:.2}", num), "-0.26");
   }
 
   #[test]
