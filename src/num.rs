@@ -25,6 +25,14 @@ use num_traits::pow::Pow;
 use num_traits::sign::Signed;
 
 
+/// The maximum precision we use when converting a `Num` into a string.
+///
+/// Because we base our implementation on rational numbers which can map
+/// to an infinite sequence in the decimal system we have to put an
+/// upper limit on the maximum precision we can display.
+const MAX_PRECISION: usize = 8;
+
+
 /// Round the given `BigRational` to the nearest integer. Rounding
 /// happens based on the Round-Half-To-Even scheme (also known as the
 /// "banker's rounding" algorithm), which rounds to the closest integer
@@ -127,7 +135,18 @@ impl Num {
   /// 1/2 (i.e., equidistant from two integers) it rounds to the even
   /// one of the two.
   pub fn round(&self) -> Self {
-    Num(round_to_even(&self.0))
+    self.round_with(0)
+  }
+
+  /// Round the given `Num` with the given precision.
+  ///
+  /// Rounding happens based on the Round-Half-To-Even scheme similar to
+  /// `round`.
+  pub fn round_with(&self, precision: usize) -> Self {
+    let factor = new_bigint(10).pow(precision);
+    let value = &self.0 * &factor;
+
+    Num(round_to_even(&value).trunc() / factor)
   }
 }
 
@@ -199,7 +218,7 @@ impl Serialize for Num {
 
 impl Display for Num {
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
-    fn format(value: &BigRational, mut result: String, first: bool) -> String {
+    fn format(value: &BigRational, mut result: String, depth: usize, precision: usize) -> String {
       let trunc = value.trunc().to_integer();
       result += &trunc.to_string();
 
@@ -207,35 +226,28 @@ impl Display for Num {
       let denom = value.denom();
       let value = numer - (trunc * denom);
 
-      if value.is_zero() {
+      if value.is_zero() || depth >= precision {
         result
       } else {
-        if first {
+        if depth == 0 {
           result += ".";
         }
 
         let value = BigRational::new(value * 10, denom.clone());
-        format(&value, result, false)
+        format(&value, result, depth + 1, precision)
       }
     }
 
     let non_negative = !self.0.is_negative();
     let prefix = "";
 
-    let value = if let Some(precision) = fmt.precision() {
-      let factor = new_bigint(10).pow(precision);
-      let value = &self.0 * &factor;
-      let value = round_to_even(&value).trunc() / factor;
-      value.abs()
-    } else {
-      self.0.abs()
-    };
-
+    let precision = fmt.precision().unwrap_or(MAX_PRECISION);
+    let value = self.round_with(precision).0.abs();
     // We want to print out our value (which is a rational) as a
     // floating point value, for which we need to perform some form of
     // conversion. We do that using what is pretty much text book long
     // division.
-    let string = format(&value, String::new(), true);
+    let string = format(&value, String::new(), 0, precision);
     fmt.pad_integral(non_negative, prefix, &string)
   }
 }
@@ -444,6 +456,30 @@ mod tests {
   fn num_format_precision_round() {
     let num = Num::new(-259, 1000);
     assert_eq!(format!("{:.2}", num), "-0.26");
+  }
+
+  #[test]
+  fn num_max_precision() {
+    let num = Num::new(1, 3);
+    assert_eq!(num.to_string(), "0.33333333")
+  }
+
+  #[test]
+  fn num_max_precision_with_rounding() {
+    let num = Num::new(2, 3);
+    assert_eq!(num.to_string(), "0.66666667")
+  }
+
+  #[test]
+  fn num_max_custom_precision() {
+    let num = Num::new(1, 3);
+    assert_eq!(format!("{:.32}", num), "0.33333333333333333333333333333333")
+  }
+
+  #[test]
+  fn num_max_custom_precision_with_rounding() {
+    let num = Num::new(2, 3);
+    assert_eq!(format!("{:.32}", num), "0.66666666666666666666666666666667")
   }
 
   #[test]
