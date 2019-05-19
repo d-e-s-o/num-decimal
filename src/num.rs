@@ -8,13 +8,18 @@ use std::fmt::Result as FmtResult;
 use std::i32;
 use std::str::FromStr;
 
-use serde::de::Error;
-use serde::de::Unexpected;
-use serde::de::Visitor;
-use serde::Deserialize;
-use serde::Deserializer;
-use serde::Serialize;
-use serde::Serializer;
+#[cfg(feature = "serde")]
+use serde::{
+  de::{
+    Error,
+    Unexpected,
+    Visitor,
+  },
+  Deserialize,
+  Deserializer,
+  Serialize,
+  Serializer,
+};
 
 use num_bigint::BigInt;
 use num_bigint::ParseBigIntError;
@@ -150,6 +155,7 @@ impl Num {
   }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for Num {
   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
   where
@@ -207,6 +213,7 @@ impl<'de> Deserialize<'de> for Num {
   }
 }
 
+#[cfg(feature = "serde")]
 impl Serialize for Num {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
@@ -309,8 +316,11 @@ impl FromStr for Num {
 mod tests {
   use super::*;
 
-  use serde_json::from_str as from_json;
-  use serde_json::to_string as to_json;
+  #[cfg(feature = "serde")]
+  use serde_json::{
+    from_str as from_json,
+    to_string as to_json,
+  };
 
 
   #[test]
@@ -367,6 +377,7 @@ mod tests {
   }
 
   #[test]
+  #[cfg(feature = "serde")]
   fn deserialize_json_string() {
     let json = r#""37.519""#;
     let num = from_json::<Num>(&json).unwrap();
@@ -375,6 +386,7 @@ mod tests {
   }
 
   #[test]
+  #[cfg(feature = "serde")]
   fn deserialize_json_float() {
     let json = r#"126.2633"#;
     let num = from_json::<Num>(&json).unwrap();
@@ -383,6 +395,7 @@ mod tests {
   }
 
   #[test]
+  #[cfg(feature = "serde")]
   fn deserialize_json_int() {
     let json = r#"356"#;
     let num = from_json::<Num>(&json).unwrap();
@@ -391,6 +404,7 @@ mod tests {
   }
 
   #[test]
+  #[cfg(feature = "serde")]
   fn serialize_json() {
     let num = Num::from_str("14827.9102").unwrap();
     let json = to_json(&num).unwrap();
