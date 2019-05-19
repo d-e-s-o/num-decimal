@@ -6,6 +6,17 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
 use std::i32;
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Div;
+use std::ops::DivAssign;
+use std::ops::Mul;
+use std::ops::MulAssign;
+use std::ops::Neg;
+use std::ops::Rem;
+use std::ops::RemAssign;
+use std::ops::Sub;
+use std::ops::SubAssign;
 use std::str::FromStr;
 
 #[cfg(feature = "serde")]
@@ -312,9 +323,88 @@ impl FromStr for Num {
 }
 
 
+macro_rules! impl_neg {
+  ($lhs:ty) => {
+    impl Neg for $lhs {
+      type Output = Num;
+
+      #[inline]
+      fn neg(self) -> Self::Output {
+        let Num(int) = self;
+        Num(int.neg())
+      }
+    }
+  };
+}
+
+impl_neg!(Num);
+impl_neg!(&Num);
+
+
+macro_rules! impl_op {
+  (impl $imp:ident, $method:ident, $lhs:ty, $rhs:ty) => {
+    impl $imp<$rhs> for $lhs {
+      type Output = Num;
+
+      #[inline]
+      fn $method(self, rhs: $rhs) -> Self::Output {
+        let Num(lhs) = self;
+        let Num(rhs) = rhs;
+        Num(lhs.$method(rhs))
+      }
+    }
+  };
+}
+
+macro_rules! impl_ops {
+  (impl $imp:ident, $method:ident) => {
+    impl_op!(impl $imp, $method, Num, Num);
+    impl_op!(impl $imp, $method, &Num, Num);
+    impl_op!(impl $imp, $method, Num, &Num);
+    impl_op!(impl $imp, $method, &Num, &Num);
+  };
+}
+
+impl_ops!(impl Add, add);
+impl_ops!(impl Sub, sub);
+impl_ops!(impl Mul, mul);
+impl_ops!(impl Div, div);
+impl_ops!(impl Rem, rem);
+
+
+macro_rules! impl_assign_op {
+  (impl $imp:ident, $method:ident, $lhs:ty, $rhs:ty) => {
+    impl $imp<$rhs> for $lhs {
+      #[inline]
+      fn $method(&mut self, rhs: $rhs) {
+        let Num(rhs) = rhs;
+        (self.0).$method(rhs)
+      }
+    }
+  };
+}
+
+macro_rules! impl_assign_ops {
+  (impl $imp:ident, $method:ident) => {
+    impl_assign_op!(impl $imp, $method, Num, Num);
+    impl_assign_op!(impl $imp, $method, Num, &Num);
+  };
+}
+
+impl_assign_ops!(impl AddAssign, add_assign);
+impl_assign_ops!(impl SubAssign, sub_assign);
+impl_assign_ops!(impl MulAssign, mul_assign);
+impl_assign_ops!(impl DivAssign, div_assign);
+impl_assign_ops!(impl RemAssign, rem_assign);
+
+
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  use num_traits::NumAssignOps;
+  use num_traits::NumOps;
+
 
   #[cfg(feature = "serde")]
   use serde_json::{
@@ -537,5 +627,102 @@ mod tests {
     let _ = Num::from_str("1992.+50").unwrap_err();
     let _ = Num::from_str("37.-4").unwrap_err();
     let _ = Num::from_str("-44.-15").unwrap_err();
+  }
+
+  fn implements_various_num_traits<T>(_num: T)
+  where
+    // Note that we currently do not implement `NumAssign` which is a
+    // requirement for `NumAssignRef`. So we can't require that
+    // directly.
+    T: NumOps + for<'r> NumOps<&'r T> + NumAssignOps + for<'r> NumAssignOps<&'r T>,
+  {
+  }
+
+  #[test]
+  fn num_assign_ops() {
+    let num = Num::from_int(1);
+    implements_various_num_traits(num)
+  }
+
+  #[test]
+  fn num_neg() {
+    assert_eq!(Num::from_int(2).neg(), Num::from_int(-2));
+    assert_eq!(-Num::from_int(3), Num::from_int(-3));
+    assert_eq!(-&Num::from_int(4), Num::from_int(-4));
+  }
+
+  #[test]
+  fn num_add() {
+    let lhs = Num::from_int(2);
+    let rhs = Num::from_int(3);
+    assert_eq!(lhs + rhs, Num::from_int(5));
+  }
+
+  #[test]
+  fn num_sub() {
+    let lhs = Num::from_int(3);
+    let rhs = Num::from_int(2);
+    assert_eq!(lhs - rhs, Num::from_int(1));
+  }
+
+  #[test]
+  fn num_mul() {
+    let lhs = Num::from_int(2);
+    let rhs = Num::from_int(3);
+    assert_eq!(lhs * rhs, Num::from_int(6));
+  }
+
+  #[test]
+  fn num_div() {
+    let lhs = Num::from_int(8);
+    let rhs = Num::from_int(2);
+    assert_eq!(lhs / rhs, Num::from_int(4));
+  }
+
+  #[test]
+  fn num_rem() {
+    let lhs = Num::from_int(3);
+    let rhs = Num::from_int(2);
+    assert_eq!(lhs % rhs, Num::from_int(1));
+  }
+
+  #[test]
+  fn num_add_assign() {
+    let mut lhs = Num::from_int(2);
+    let rhs = Num::from_int(3);
+    lhs += rhs;
+    assert_eq!(lhs, Num::from_int(5));
+  }
+
+  #[test]
+  fn num_sub_assign() {
+    let mut lhs = Num::from_int(3);
+    let rhs = Num::from_int(2);
+    lhs -= rhs;
+    assert_eq!(lhs, Num::from_int(1));
+  }
+
+  #[test]
+  fn num_mul_assign() {
+    let mut lhs = Num::from_int(2);
+    let rhs = Num::from_int(3);
+    lhs *= rhs;
+    assert_eq!(lhs, Num::from_int(6));
+  }
+
+  #[test]
+  fn num_div_assign() {
+    let mut lhs = Num::from_int(8);
+    let rhs = Num::from_int(2);
+    lhs /= rhs;
+    assert_eq!(lhs, Num::from_int(4));
+  }
+
+  #[test]
+  fn num_rem_assign() {
+    let mut lhs = Num::from_int(3);
+    let rhs = Num::from_int(2);
+    lhs %= rhs;
+    assert_eq!(lhs, Num::from_int(1));
   }
 }
