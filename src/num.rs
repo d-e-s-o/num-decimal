@@ -242,7 +242,12 @@ impl Serialize for Num {
 
 impl Display for Num {
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
-    fn format(value: &BigRational, mut result: String, depth: usize, precision: usize) -> String {
+    fn format(
+      value: &BigRational,
+      mut result: String,
+      depth: usize,
+      precision: Option<usize>,
+    ) -> String {
       let trunc = value.trunc().to_integer();
       result += &trunc.to_string();
 
@@ -250,7 +255,10 @@ impl Display for Num {
       let denom = value.denom();
       let value = numer - (trunc * denom);
 
-      if value.is_zero() || depth >= precision {
+      // If the user specified a precision for the formatting then we
+      // honor that by ensuring that we have that many decimals.
+      // Otherwise we print as many as there are, up to `MAX_PRECISION`.
+      if (value.is_zero() && precision.is_none()) || depth >= precision.unwrap_or(MAX_PRECISION) {
         result
       } else {
         if depth == 0 {
@@ -265,8 +273,8 @@ impl Display for Num {
     let non_negative = !self.0.is_negative();
     let prefix = "";
 
-    let precision = fmt.precision().unwrap_or(MAX_PRECISION);
-    let value = self.round_with(precision).0.abs();
+    let precision = fmt.precision();
+    let value = self.round_with(precision.unwrap_or(MAX_PRECISION)).0.abs();
     // We want to print out our value (which is a rational) as a
     // floating point value, for which we need to perform some form of
     // conversion. We do that using what is pretty much text book long
@@ -623,6 +631,20 @@ mod tests {
   fn num_max_custom_precision_with_rounding() {
     let num = Num::new(2, 3);
     assert_eq!(format!("{:.32}", num), "0.66666666666666666666666666666667")
+  }
+
+  #[test]
+  fn num_precision_round_to_zero() {
+    let actual = format!("{:.2}", Num::from_str("-0.001").unwrap());
+    let expected = format!("{:.2}", -0.001f64);
+    assert_eq!(actual, expected)
+  }
+
+  #[test]
+  fn num_precision_fill_zeros() {
+    let actual = format!("{:.3}", Num::from_int(5));
+    let expected = format!("{:.3}", 5.0f64);
+    assert_eq!(actual, expected)
   }
 
   #[test]
