@@ -111,9 +111,12 @@ impl Display for ParseNumError {
 
 impl StdError for ParseNumError {}
 
-
 /// Create a `BigInt` from an `i32`.
-fn new_bigint(val: i32) -> BigInt {
+fn new_bigint<T>(val: T) -> BigInt
+where
+  T: Into<i32>,
+{
+  let val = val.into();
   let (sign, val) = if val >= 0 {
     (Sign::Plus, val as u32)
   } else {
@@ -139,8 +142,11 @@ impl Num {
   }
 
   /// Construct a `Num` from an integer.
-  pub fn from_int(val: i32) -> Self {
-    Num(BigRational::from_integer(new_bigint(val)))
+  pub fn from_int<T>(val: T) -> Self
+  where
+    T: Into<i32>,
+  {
+    Num(BigRational::from_integer(new_bigint(val.into())))
   }
 
   /// Round the given `Num` to the nearest integer.
@@ -356,12 +362,34 @@ macro_rules! impl_op {
   };
 }
 
+macro_rules! impl_int_op {
+  (impl $imp:ident, $method:ident, $lhs:ty) => {
+    // Unfortunately we are only able to allow for right hand side
+    // integer types in the operation.
+    impl<T> $imp<T> for $lhs
+    where
+      T: Into<i32>,
+    {
+      type Output = Num;
+
+      #[inline]
+      fn $method(self, rhs: T) -> Self::Output {
+        let Num(lhs) = self;
+        let rhs = BigRational::from_integer(new_bigint(rhs));
+        Num(lhs.$method(rhs))
+      }
+    }
+  };
+}
+
 macro_rules! impl_ops {
   (impl $imp:ident, $method:ident) => {
     impl_op!(impl $imp, $method, Num, Num);
     impl_op!(impl $imp, $method, &Num, Num);
     impl_op!(impl $imp, $method, Num, &Num);
     impl_op!(impl $imp, $method, &Num, &Num);
+    impl_int_op!(impl $imp, $method, Num);
+    impl_int_op!(impl $imp, $method, &Num);
   };
 }
 
@@ -386,6 +414,17 @@ macro_rules! impl_assign_op {
 
 macro_rules! impl_assign_ops {
   (impl $imp:ident, $method:ident) => {
+    impl<T> $imp<T> for Num
+    where
+      T: Into<i32>,
+    {
+      #[inline]
+      fn $method(&mut self, rhs: T) {
+        let rhs = BigRational::from_integer(new_bigint(rhs));
+        (self.0).$method(rhs)
+      }
+    }
+
     impl_assign_op!(impl $imp, $method, Num, Num);
     impl_assign_op!(impl $imp, $method, Num, &Num);
   };
@@ -659,10 +698,22 @@ mod tests {
   }
 
   #[test]
+  fn num_add_integer() {
+    let lhs = Num::from_int(2);
+    assert_eq!(lhs + 3, Num::from_int(5));
+  }
+
+  #[test]
   fn num_sub() {
     let lhs = Num::from_int(3);
     let rhs = Num::from_int(2);
     assert_eq!(lhs - rhs, Num::from_int(1));
+  }
+
+  #[test]
+  fn num_sub_integer() {
+    let lhs = Num::from_int(3);
+    assert_eq!(lhs - 2, Num::from_int(1));
   }
 
   #[test]
@@ -673,10 +724,22 @@ mod tests {
   }
 
   #[test]
+  fn num_mul_integer() {
+    let lhs = Num::from_int(2);
+    assert_eq!(lhs * 3, Num::from_int(6));
+  }
+
+  #[test]
   fn num_div() {
     let lhs = Num::from_int(8);
     let rhs = Num::from_int(2);
     assert_eq!(lhs / rhs, Num::from_int(4));
+  }
+
+  #[test]
+  fn num_div_integer() {
+    let lhs = Num::from_int(8);
+    assert_eq!(lhs / 2, Num::from_int(4));
   }
 
   #[test]
@@ -687,10 +750,23 @@ mod tests {
   }
 
   #[test]
+  fn num_rem_integer() {
+    let lhs = Num::from_int(3);
+    assert_eq!(lhs % 2, Num::from_int(1));
+  }
+
+  #[test]
   fn num_add_assign() {
     let mut lhs = Num::from_int(2);
     let rhs = Num::from_int(3);
     lhs += rhs;
+    assert_eq!(lhs, Num::from_int(5));
+  }
+
+  #[test]
+  fn num_add_assign_integer() {
+    let mut lhs = Num::from_int(2);
+    lhs += 3;
     assert_eq!(lhs, Num::from_int(5));
   }
 
@@ -703,10 +779,24 @@ mod tests {
   }
 
   #[test]
+  fn num_sub_assign_integer() {
+    let mut lhs = Num::from_int(3);
+    lhs -= 2;
+    assert_eq!(lhs, Num::from_int(1));
+  }
+
+  #[test]
   fn num_mul_assign() {
     let mut lhs = Num::from_int(2);
     let rhs = Num::from_int(3);
     lhs *= rhs;
+    assert_eq!(lhs, Num::from_int(6));
+  }
+
+  #[test]
+  fn num_mul_assign_integer() {
+    let mut lhs = Num::from_int(2);
+    lhs *= 3;
     assert_eq!(lhs, Num::from_int(6));
   }
 
@@ -719,10 +809,24 @@ mod tests {
   }
 
   #[test]
+  fn num_div_assign_integer() {
+    let mut lhs = Num::from_int(8);
+    lhs /= 2;
+    assert_eq!(lhs, Num::from_int(4));
+  }
+
+  #[test]
   fn num_rem_assign() {
     let mut lhs = Num::from_int(3);
     let rhs = Num::from_int(2);
     lhs %= rhs;
+    assert_eq!(lhs, Num::from_int(1));
+  }
+
+  #[test]
+  fn num_rem_assign_integer() {
+    let mut lhs = Num::from_int(3);
+    lhs %= 2;
     assert_eq!(lhs, Num::from_int(1));
   }
 }
