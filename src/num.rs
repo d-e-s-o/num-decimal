@@ -170,6 +170,16 @@ impl Num {
 
     Num(round_to_even(&value).trunc() / factor)
   }
+
+  /// Round the given `Num` towards zero.
+  pub fn trunc(&self) -> Self {
+    Num(self.0.trunc())
+  }
+
+  /// Return the fractional part of the given `Num`, with division rounded towards zero.
+  pub fn fract(&self) -> Self {
+    Num(self.0.fract())
+  }
 }
 
 #[cfg(feature = "serde")]
@@ -681,6 +691,18 @@ mod tests {
   fn num_neg_round_uneven() {
     let num = Num::from_str("-4001.50").unwrap().round();
     assert_eq!(num, Num::from_int(-4002));
+  }
+
+  #[test]
+  fn num_trunc() {
+    let num = Num::from_str("1.1").unwrap().trunc();
+    assert_eq!(num, Num::from_int(1));
+  }
+
+  #[test]
+  fn num_fract() {
+    let num = Num::from_str("1.1").unwrap().fract();
+    assert_eq!(num, Num::from_str("0.1").unwrap());
   }
 
   #[test]
