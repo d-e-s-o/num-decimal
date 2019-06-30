@@ -206,6 +206,12 @@ impl Num {
   }
 }
 
+impl Default for Num {
+  fn default() -> Self {
+    Num::from_int(0)
+  }
+}
+
 #[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for Num {
   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -493,6 +499,12 @@ mod tests {
     to_string as to_json,
   };
 
+
+  #[test]
+  fn default_num() {
+    let num = Num::default();
+    assert_eq!(num, Num::from_int(0));
+  }
 
   #[test]
   fn num_from_int() {
