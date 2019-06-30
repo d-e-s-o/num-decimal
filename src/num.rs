@@ -36,6 +36,7 @@ use num_bigint::BigInt;
 use num_bigint::ParseBigIntError;
 use num_bigint::Sign;
 use num_rational::BigRational;
+use num_traits::cast::ToPrimitive;
 use num_traits::identities::Zero;
 use num_traits::pow::Pow;
 use num_traits::sign::Signed;
@@ -179,6 +180,29 @@ impl Num {
   /// Return the fractional part of the given `Num`, with division rounded towards zero.
   pub fn fract(&self) -> Self {
     Num(self.0.fract())
+  }
+
+  /// Convert the given `Num` to an integer, rounding towards zero.
+  pub fn to_integer(&self) -> BigInt {
+    self.0.to_integer()
+  }
+
+  /// Convert the given `Num` into a `u64`.
+  ///
+  /// The value will be converted into an integer, with rounding towards
+  /// zero. `None` is returned if the resulting integer does not fit
+  /// into 64 bit.
+  pub fn to_i64(&self) -> Option<i64> {
+    self.to_integer().to_i64()
+  }
+
+  /// Convert the given `Num` into a `u64`.
+  ///
+  /// The value will be converted into an integer, with rounding towards
+  /// zero. `None` is returned if the resulting integer does not fit
+  /// into 64 bit.
+  pub fn to_u64(&self) -> Option<u64> {
+    self.to_integer().to_u64()
   }
 }
 
@@ -703,6 +727,36 @@ mod tests {
   fn num_fract() {
     let num = Num::from_str("1.1").unwrap().fract();
     assert_eq!(num, Num::from_str("0.1").unwrap());
+  }
+
+  #[test]
+  fn num_to_integer() {
+    let num = Num::from_str("42.1").unwrap().to_integer();
+    assert_eq!(num, new_bigint(42));
+  }
+
+  #[test]
+  fn num_to_i64() {
+    let val = Num::from_str("-1337.8").unwrap().to_i64().unwrap();
+    assert_eq!(val, -1337);
+  }
+
+  #[test]
+  fn num_to_i64_underflow() {
+    let val = Num::from_str("-9223372036854775809").unwrap().to_u64();
+    assert_eq!(val, None);
+  }
+
+  #[test]
+  fn num_to_u64() {
+    let val = Num::from_str("31267.916721").unwrap().to_u64().unwrap();
+    assert_eq!(val, 31267);
+  }
+
+  #[test]
+  fn num_to_u64_overflow() {
+    let val = Num::from_str("18446744073709551616").unwrap().to_u64();
+    assert_eq!(val, None);
   }
 
   #[test]
