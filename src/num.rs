@@ -204,6 +204,11 @@ impl Num {
   pub fn to_u64(&self) -> Option<u64> {
     self.to_integer().to_u64()
   }
+
+  /// Check if the given `Num` is zero.
+  pub fn is_zero(&self) -> bool {
+    self.0.is_zero()
+  }
 }
 
 impl Default for Num {
@@ -938,5 +943,12 @@ mod tests {
     let mut lhs = Num::from_int(3);
     lhs %= 2;
     assert_eq!(lhs, Num::from_int(1));
+  }
+
+  #[test]
+  fn check_zero() {
+    assert!(Num::from_int(0).is_zero());
+    assert!(Num::new(0, 12).is_zero());
+    assert!((Num::new(26, 2) - Num::from_int(13)).is_zero());
   }
 }
