@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Daniel Mueller <deso@posteo.net>
+// Copyright (C) 2019-2020 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::error::Error as StdError;
@@ -208,6 +208,16 @@ impl Num {
   /// Check if the given `Num` is zero.
   pub fn is_zero(&self) -> bool {
     self.0.is_zero()
+  }
+
+  /// Check if the given `Num` is positive.
+  pub fn is_positive(&self) -> bool {
+    self.0.is_positive()
+  }
+
+  /// Check if the given `Num` is negative.
+  pub fn is_negative(&self) -> bool {
+    self.0.is_negative()
   }
 }
 
@@ -950,5 +960,19 @@ mod tests {
     assert!(Num::from_int(0).is_zero());
     assert!(Num::new(0, 12).is_zero());
     assert!((Num::new(26, 2) - Num::from_int(13)).is_zero());
+  }
+
+  #[test]
+  fn check_positive() {
+    assert!(!Num::from_int(0).is_positive());
+    assert!(Num::from_int(2).is_positive());
+    assert!(!(Num::new(26, 2) - Num::from_int(14)).is_positive());
+  }
+
+  #[test]
+  fn check_negative() {
+    assert!(!Num::from_int(0).is_negative());
+    assert!(Num::from_int(-1).is_negative());
+    assert!(!(Num::new(26, 2) - Num::from_int(12)).is_negative());
   }
 }
