@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::error::Error as StdError;
+use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
@@ -130,7 +131,7 @@ where
 
 /// An unlimited precision number type with some improvements and
 /// customizations over `BigRational`.
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Num(BigRational);
 
 impl Num {
@@ -292,6 +293,20 @@ impl Serialize for Num {
     S: Serializer,
   {
     serializer.serialize_str(&self.to_string())
+  }
+}
+
+// The default `Debug` implementation is way too verbose. We have no
+// intention of debugging `BigRational` itself. So we overwrite it here,
+// effectively printing a fraction.
+impl Debug for Num {
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
+    // We maintain the invariant that the numerator determines the sign
+    // and that the denominator is always positive (as it can never be
+    // zero).
+    debug_assert!(self.0.denom().is_positive());
+
+    write!(fmt, "{}/{}", self.0.numer(), self.0.denom())
   }
 }
 
@@ -974,5 +989,10 @@ mod tests {
     assert!(!Num::from_int(0).is_negative());
     assert!(Num::from_int(-1).is_negative());
     assert!(!(Num::new(26, 2) - Num::from_int(12)).is_negative());
+  }
+
+  #[test]
+  fn debug_format() {
+    assert_eq!(format!("{:?}", Num::new(-1337, 42)), "-191/6");
   }
 }
