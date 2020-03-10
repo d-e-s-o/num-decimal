@@ -5,6 +5,7 @@ num-decimal
 ===========
 
 - [Documentation][docs-rs]
+- [Changelog](CHANGELOG.md)
 
 A crate providing infinite precision decimals with fair rounding and
 other gimmicks based on [`num-rational`][num-decimal].

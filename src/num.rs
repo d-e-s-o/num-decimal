@@ -407,6 +407,32 @@ impl FromStr for Num {
 }
 
 
+macro_rules! impl_from {
+  ($type:ty) => {
+    impl From<$type> for Num {
+      #[inline]
+      fn from(val: $type) -> Self {
+        Self(BigRational::from_integer(BigInt::from(val)))
+      }
+    }
+  };
+}
+
+impl_from!(i128);
+impl_from!(i16);
+impl_from!(i32);
+impl_from!(i64);
+impl_from!(i8);
+impl_from!(isize);
+impl_from!(u128);
+impl_from!(u16);
+impl_from!(u32);
+impl_from!(u64);
+impl_from!(u8);
+impl_from!(usize);
+impl_from!(BigInt);
+
+
 macro_rules! impl_neg {
   ($lhs:ty) => {
     impl Neg for $lhs {
@@ -994,5 +1020,20 @@ mod tests {
   #[test]
   fn debug_format() {
     assert_eq!(format!("{:?}", Num::new(-1337, 42)), "-191/6");
+  }
+
+  #[test]
+  fn from() {
+    assert_eq!(&Num::from(42usize).to_string(), "42");
+    assert_eq!(&Num::from(255u8).to_string(), "255");
+    assert_eq!(
+      Num::from(u128::max_value()).to_string(),
+      u128::max_value().to_string()
+    );
+    assert_eq!(
+      Num::from(i128::min_value()).to_string(),
+      i128::min_value().to_string()
+    );
+    assert_eq!(&Num::from(BigInt::from(1)).to_string(), "1");
   }
 }
