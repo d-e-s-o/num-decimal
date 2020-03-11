@@ -143,14 +143,6 @@ impl Num {
     Num(BigRational::new(numer, denom))
   }
 
-  /// Construct a `Num` from an integer.
-  pub fn from_int<T>(val: T) -> Self
-  where
-    T: Into<i32>,
-  {
-    Num(BigRational::from_integer(new_bigint(val.into())))
-  }
-
   /// Round the given `Num` to the nearest integer.
   ///
   /// Rounding happens based on the Round-Half-To-Even scheme (also
@@ -224,7 +216,7 @@ impl Num {
 
 impl Default for Num {
   fn default() -> Self {
-    Num::from_int(0)
+    Num::from(0)
   }
 }
 
@@ -559,26 +551,26 @@ mod tests {
   #[test]
   fn default_num() {
     let num = Num::default();
-    assert_eq!(num, Num::from_int(0));
+    assert_eq!(num, Num::from(0));
   }
 
   #[test]
   fn num_from_int() {
     let num = Num::from_str("42").unwrap();
-    assert_eq!(num, Num::from_int(42));
+    assert_eq!(num, Num::from(42));
   }
 
   #[test]
   fn num_from_neg_int() {
     let num = Num::from_str("-37").unwrap();
-    assert_eq!(num, Num::from_int(-37));
+    assert_eq!(num, Num::from(-37));
   }
 
   #[test]
   fn num_from_min_neg_int() {
     let min = i32::MIN + 1;
     let num = Num::from_str(&min.to_string()).unwrap();
-    assert_eq!(num, Num::from_int(-2147483647));
+    assert_eq!(num, Num::from(-2147483647));
   }
 
   #[test]
@@ -639,7 +631,7 @@ mod tests {
     let json = r#"356"#;
     let num = from_json::<Num>(&json).unwrap();
 
-    assert_eq!(num, Num::from_int(356));
+    assert_eq!(num, Num::from(356));
   }
 
   #[test]
@@ -653,25 +645,25 @@ mod tests {
 
   #[test]
   fn zero_to_string() {
-    let num = Num::from_int(0);
+    let num = Num::from(0);
     assert_eq!(num.to_string(), "0");
   }
 
   #[test]
   fn one_to_string() {
-    let num = Num::from_int(1);
+    let num = Num::from(1);
     assert_eq!(num.to_string(), "1");
   }
 
   #[test]
   fn num_int_to_string() {
-    let num = Num::from_int(42);
+    let num = Num::from(42);
     assert_eq!(num.to_string(), "42");
   }
 
   #[test]
   fn num_neg_int_to_string() {
-    let num = Num::from_int(-1337);
+    let num = Num::from(-1337);
     assert_eq!(num.to_string(), "-1337");
   }
 
@@ -744,7 +736,7 @@ mod tests {
 
   #[test]
   fn num_precision_fill_zeros() {
-    let actual = format!("{:.3}", Num::from_int(5));
+    let actual = format!("{:.3}", Num::from(5));
     let expected = format!("{:.3}", 5.0f64);
     assert_eq!(actual, expected)
   }
@@ -776,19 +768,19 @@ mod tests {
   #[test]
   fn num_neg_round_even() {
     let num = Num::from_str("-4000.50").unwrap().round();
-    assert_eq!(num, Num::from_int(-4000));
+    assert_eq!(num, Num::from(-4000));
   }
 
   #[test]
   fn num_neg_round_uneven() {
     let num = Num::from_str("-4001.50").unwrap().round();
-    assert_eq!(num, Num::from_int(-4002));
+    assert_eq!(num, Num::from(-4002));
   }
 
   #[test]
   fn num_trunc() {
     let num = Num::from_str("1.1").unwrap().trunc();
-    assert_eq!(num, Num::from_int(1));
+    assert_eq!(num, Num::from(1));
   }
 
   #[test]
@@ -845,176 +837,176 @@ mod tests {
 
   #[test]
   fn num_assign_ops() {
-    let num = Num::from_int(1);
+    let num = Num::from(1);
     implements_various_num_traits(num)
   }
 
   #[test]
   fn num_neg() {
-    assert_eq!(Num::from_int(2).neg(), Num::from_int(-2));
-    assert_eq!(-Num::from_int(3), Num::from_int(-3));
-    assert_eq!(-&Num::from_int(4), Num::from_int(-4));
+    assert_eq!(Num::from(2).neg(), Num::from(-2));
+    assert_eq!(-Num::from(3), Num::from(-3));
+    assert_eq!(-&Num::from(4), Num::from(-4));
   }
 
   #[test]
   fn num_add() {
-    let lhs = Num::from_int(2);
-    let rhs = Num::from_int(3);
-    assert_eq!(lhs + rhs, Num::from_int(5));
+    let lhs = Num::from(2);
+    let rhs = Num::from(3);
+    assert_eq!(lhs + rhs, Num::from(5));
   }
 
   #[test]
   fn num_add_integer() {
-    let lhs = Num::from_int(2);
-    assert_eq!(lhs + 3, Num::from_int(5));
+    let lhs = Num::from(2);
+    assert_eq!(lhs + 3, Num::from(5));
   }
 
   #[test]
   fn num_sub() {
-    let lhs = Num::from_int(3);
-    let rhs = Num::from_int(2);
-    assert_eq!(lhs - rhs, Num::from_int(1));
+    let lhs = Num::from(3);
+    let rhs = Num::from(2);
+    assert_eq!(lhs - rhs, Num::from(1));
   }
 
   #[test]
   fn num_sub_integer() {
-    let lhs = Num::from_int(3);
-    assert_eq!(lhs - 2, Num::from_int(1));
+    let lhs = Num::from(3);
+    assert_eq!(lhs - 2, Num::from(1));
   }
 
   #[test]
   fn num_mul() {
-    let lhs = Num::from_int(2);
-    let rhs = Num::from_int(3);
-    assert_eq!(lhs * rhs, Num::from_int(6));
+    let lhs = Num::from(2);
+    let rhs = Num::from(3);
+    assert_eq!(lhs * rhs, Num::from(6));
   }
 
   #[test]
   fn num_mul_integer() {
-    let lhs = Num::from_int(2);
-    assert_eq!(lhs * 3, Num::from_int(6));
+    let lhs = Num::from(2);
+    assert_eq!(lhs * 3, Num::from(6));
   }
 
   #[test]
   fn num_div() {
-    let lhs = Num::from_int(8);
-    let rhs = Num::from_int(2);
-    assert_eq!(lhs / rhs, Num::from_int(4));
+    let lhs = Num::from(8);
+    let rhs = Num::from(2);
+    assert_eq!(lhs / rhs, Num::from(4));
   }
 
   #[test]
   fn num_div_integer() {
-    let lhs = Num::from_int(8);
-    assert_eq!(lhs / 2, Num::from_int(4));
+    let lhs = Num::from(8);
+    assert_eq!(lhs / 2, Num::from(4));
   }
 
   #[test]
   fn num_rem() {
-    let lhs = Num::from_int(3);
-    let rhs = Num::from_int(2);
-    assert_eq!(lhs % rhs, Num::from_int(1));
+    let lhs = Num::from(3);
+    let rhs = Num::from(2);
+    assert_eq!(lhs % rhs, Num::from(1));
   }
 
   #[test]
   fn num_rem_integer() {
-    let lhs = Num::from_int(3);
-    assert_eq!(lhs % 2, Num::from_int(1));
+    let lhs = Num::from(3);
+    assert_eq!(lhs % 2, Num::from(1));
   }
 
   #[test]
   fn num_add_assign() {
-    let mut lhs = Num::from_int(2);
-    let rhs = Num::from_int(3);
+    let mut lhs = Num::from(2);
+    let rhs = Num::from(3);
     lhs += rhs;
-    assert_eq!(lhs, Num::from_int(5));
+    assert_eq!(lhs, Num::from(5));
   }
 
   #[test]
   fn num_add_assign_integer() {
-    let mut lhs = Num::from_int(2);
+    let mut lhs = Num::from(2);
     lhs += 3;
-    assert_eq!(lhs, Num::from_int(5));
+    assert_eq!(lhs, Num::from(5));
   }
 
   #[test]
   fn num_sub_assign() {
-    let mut lhs = Num::from_int(3);
-    let rhs = Num::from_int(2);
+    let mut lhs = Num::from(3);
+    let rhs = Num::from(2);
     lhs -= rhs;
-    assert_eq!(lhs, Num::from_int(1));
+    assert_eq!(lhs, Num::from(1));
   }
 
   #[test]
   fn num_sub_assign_integer() {
-    let mut lhs = Num::from_int(3);
+    let mut lhs = Num::from(3);
     lhs -= 2;
-    assert_eq!(lhs, Num::from_int(1));
+    assert_eq!(lhs, Num::from(1));
   }
 
   #[test]
   fn num_mul_assign() {
-    let mut lhs = Num::from_int(2);
-    let rhs = Num::from_int(3);
+    let mut lhs = Num::from(2);
+    let rhs = Num::from(3);
     lhs *= rhs;
-    assert_eq!(lhs, Num::from_int(6));
+    assert_eq!(lhs, Num::from(6));
   }
 
   #[test]
   fn num_mul_assign_integer() {
-    let mut lhs = Num::from_int(2);
+    let mut lhs = Num::from(2);
     lhs *= 3;
-    assert_eq!(lhs, Num::from_int(6));
+    assert_eq!(lhs, Num::from(6));
   }
 
   #[test]
   fn num_div_assign() {
-    let mut lhs = Num::from_int(8);
-    let rhs = Num::from_int(2);
+    let mut lhs = Num::from(8);
+    let rhs = Num::from(2);
     lhs /= rhs;
-    assert_eq!(lhs, Num::from_int(4));
+    assert_eq!(lhs, Num::from(4));
   }
 
   #[test]
   fn num_div_assign_integer() {
-    let mut lhs = Num::from_int(8);
+    let mut lhs = Num::from(8);
     lhs /= 2;
-    assert_eq!(lhs, Num::from_int(4));
+    assert_eq!(lhs, Num::from(4));
   }
 
   #[test]
   fn num_rem_assign() {
-    let mut lhs = Num::from_int(3);
-    let rhs = Num::from_int(2);
+    let mut lhs = Num::from(3);
+    let rhs = Num::from(2);
     lhs %= rhs;
-    assert_eq!(lhs, Num::from_int(1));
+    assert_eq!(lhs, Num::from(1));
   }
 
   #[test]
   fn num_rem_assign_integer() {
-    let mut lhs = Num::from_int(3);
+    let mut lhs = Num::from(3);
     lhs %= 2;
-    assert_eq!(lhs, Num::from_int(1));
+    assert_eq!(lhs, Num::from(1));
   }
 
   #[test]
   fn check_zero() {
-    assert!(Num::from_int(0).is_zero());
+    assert!(Num::from(0).is_zero());
     assert!(Num::new(0, 12).is_zero());
-    assert!((Num::new(26, 2) - Num::from_int(13)).is_zero());
+    assert!((Num::new(26, 2) - Num::from(13)).is_zero());
   }
 
   #[test]
   fn check_positive() {
-    assert!(!Num::from_int(0).is_positive());
-    assert!(Num::from_int(2).is_positive());
-    assert!(!(Num::new(26, 2) - Num::from_int(14)).is_positive());
+    assert!(!Num::from(0).is_positive());
+    assert!(Num::from(2).is_positive());
+    assert!(!(Num::new(26, 2) - Num::from(14)).is_positive());
   }
 
   #[test]
   fn check_negative() {
-    assert!(!Num::from_int(0).is_negative());
-    assert!(Num::from_int(-1).is_negative());
-    assert!(!(Num::new(26, 2) - Num::from_int(12)).is_negative());
+    assert!(!Num::from(0).is_negative());
+    assert!(Num::from(-1).is_negative());
+    assert!(!(Num::new(26, 2) - Num::from(12)).is_negative());
   }
 
   #[test]
