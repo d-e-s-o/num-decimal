@@ -57,9 +57,9 @@ const MAX_PRECISION: usize = 8;
 /// as expected but if the fractional part is exactly 1/2 (i.e.,
 /// equidistant from two integers) it rounds to the even one of the two.
 fn round_to_even(val: &BigRational) -> BigRational {
-  let zero = new_bigint(0);
-  let one = new_bigint(1);
-  let two = new_bigint(2);
+  let zero = BigInt::from(0);
+  let one = BigInt::from(1);
+  let two = BigInt::from(2);
 
   let zero_ = BigRational::new(zero.clone(), one.clone());
   let half = BigRational::new(one.clone(), two.clone());
@@ -113,21 +113,6 @@ impl Display for ParseNumError {
 
 impl StdError for ParseNumError {}
 
-/// Create a `BigInt` from an `i32`.
-fn new_bigint<T>(val: T) -> BigInt
-where
-  T: Into<i32>,
-{
-  let val = val.into();
-  let (sign, val) = if val >= 0 {
-    (Sign::Plus, val as u32)
-  } else {
-    (Sign::Minus, -val as u32)
-  };
-
-  BigInt::from_slice(sign, &[val.to_le()])
-}
-
 
 /// An unlimited precision number type with some improvements and
 /// customizations over `BigRational`.
@@ -137,8 +122,8 @@ pub struct Num(BigRational);
 impl Num {
   /// Construct a `Num` from two integers.
   pub fn new(numer: i32, denom: u32) -> Self {
-    let numer = new_bigint(numer);
-    let denom = BigInt::from_slice(Sign::Plus, &[denom.to_le()]);
+    let numer = BigInt::from(numer);
+    let denom = BigInt::from(denom);
 
     Num(BigRational::new(numer, denom))
   }
@@ -159,7 +144,7 @@ impl Num {
   /// Rounding happens based on the Round-Half-To-Even scheme similar to
   /// `round`.
   pub fn round_with(&self, precision: usize) -> Self {
-    let factor = new_bigint(10).pow(precision);
+    let factor = BigInt::from(10).pow(precision);
     let value = &self.0 * &factor;
 
     Num(round_to_even(&value).trunc() / factor)
@@ -389,7 +374,7 @@ impl FromStr for Num {
 
     if let Some(s) = splits.next() {
       let denom = parse_str(s, sign)?;
-      let power = new_bigint(10).pow(s.len());
+      let power = BigInt::from(10).pow(s.len());
       let numer = numer * &power + denom;
       Ok(Num(BigRational::new(numer, power)))
     } else {
@@ -464,14 +449,14 @@ macro_rules! impl_int_op {
     // integer types in the operation.
     impl<T> $imp<T> for $lhs
     where
-      T: Into<i32>,
+      BigInt: From<T>,
     {
       type Output = Num;
 
       #[inline]
       fn $method(self, rhs: T) -> Self::Output {
         let Num(lhs) = self;
-        let rhs = BigRational::from_integer(new_bigint(rhs));
+        let rhs = BigRational::from_integer(BigInt::from(rhs));
         Num(lhs.$method(rhs))
       }
     }
@@ -512,11 +497,11 @@ macro_rules! impl_assign_ops {
   (impl $imp:ident, $method:ident) => {
     impl<T> $imp<T> for Num
     where
-      T: Into<i32>,
+      BigInt: From<T>,
     {
       #[inline]
       fn $method(&mut self, rhs: T) {
-        let rhs = BigRational::from_integer(new_bigint(rhs));
+        let rhs = BigRational::from_integer(BigInt::from(rhs));
         (self.0).$method(rhs)
       }
     }
@@ -792,7 +777,7 @@ mod tests {
   #[test]
   fn num_to_integer() {
     let num = Num::from_str("42.1").unwrap().to_integer();
-    assert_eq!(num, new_bigint(42));
+    assert_eq!(num, BigInt::from(42));
   }
 
   #[test]
