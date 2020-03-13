@@ -121,7 +121,11 @@ pub struct Num(BigRational);
 
 impl Num {
   /// Construct a `Num` from two integers.
-  pub fn new(numer: i32, denom: u32) -> Self {
+  pub fn new<T, U>(numer: T, denom: U) -> Self
+  where
+    BigInt: From<T>,
+    BigInt: From<U>,
+  {
     let numer = BigInt::from(numer);
     let denom = BigInt::from(denom);
 
