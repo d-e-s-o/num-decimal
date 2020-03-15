@@ -1,5 +1,5 @@
-Unreleased
-----------
+0.2.0
+-----
 - Added `From` implementations for various integer types
   - Removed `Num::from_int` constructor
 - Adjusted `Num::new` constructor to work with various integer types
