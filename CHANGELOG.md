@@ -1,3 +1,8 @@
+Unreleased
+----------
+- Added export for `ParseNumError` error type
+
+
 0.2.0
 -----
 - Added `From` implementations for various integer types

@@ -50,3 +50,4 @@
 mod num;
 
 pub use crate::num::Num;
+pub use crate::num::ParseNumError;

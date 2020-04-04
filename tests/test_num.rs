@@ -10,6 +10,7 @@ use num_traits::NumAssignOps;
 use num_traits::NumOps;
 
 use num_decimal::Num;
+use num_decimal::ParseNumError;
 
 
 #[test]
@@ -249,7 +250,12 @@ fn num_to_u64_overflow() {
 
 #[test]
 fn num_from_invalid_str() {
-  let _ = Num::from_str("1992.+50").unwrap_err();
+  let err = Num::from_str("abc.+50").unwrap_err();
+  assert!(matches!(err, ParseNumError::ParseIntError(..)), err);
+
+  let err = Num::from_str("1992.+50").unwrap_err();
+  assert_eq!(err, ParseNumError::InvalidStrError("+50".to_string()));
+
   let _ = Num::from_str("37.-4").unwrap_err();
   let _ = Num::from_str("-44.-15").unwrap_err();
 }

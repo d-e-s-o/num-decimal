@@ -87,7 +87,7 @@ fn round_to_even(val: &BigRational) -> BigRational {
 
 
 /// An error used for conveying parsing failures.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ParseNumError {
   /// A string could not get parsed as a `Num`.
   InvalidStrError(String),
