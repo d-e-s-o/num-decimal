@@ -110,7 +110,14 @@ impl Display for ParseNumError {
   }
 }
 
-impl StdError for ParseNumError {}
+impl StdError for ParseNumError {
+  fn source(&self) -> Option<&(dyn StdError + 'static)> {
+    match self {
+      Self::InvalidStrError(..) => None,
+      Self::ParseIntError(err) => err.source(),
+    }
+  }
+}
 
 
 /// An unlimited precision number type with some improvements and
