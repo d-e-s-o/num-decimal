@@ -89,8 +89,11 @@ fn format_impl(
   value: &BigRational,
   mut result: String,
   depth: usize,
+  min_precision: usize,
   precision: Option<usize>,
 ) -> String {
+  debug_assert!(min_precision <= precision.unwrap_or(MAX_PRECISION));
+
   let trunc = value.trunc().to_integer();
   result += &trunc.to_string();
 
@@ -98,10 +101,12 @@ fn format_impl(
   let denom = value.denom();
   let value = numer - (trunc * denom);
 
+  let at_min = depth >= min_precision;
+  let at_max = depth >= precision.unwrap_or(MAX_PRECISION);
   // If the user specified a precision for the formatting then we
   // honor that by ensuring that we have that many decimals.
   // Otherwise we print as many as there are, up to `MAX_PRECISION`.
-  if (value.is_zero() && precision.is_none()) || depth >= precision.unwrap_or(MAX_PRECISION) {
+  if (value.is_zero() && precision.is_none() && at_min) || at_max {
     result
   } else {
     if depth == 0 {
@@ -109,7 +114,7 @@ fn format_impl(
     }
 
     let value = BigRational::new(value * 10, denom.clone());
-    format_impl(&value, result, depth + 1, precision)
+    format_impl(&value, result, depth + 1, min_precision, precision)
   }
 }
 
@@ -235,6 +240,20 @@ impl Num {
   pub fn is_negative(&self) -> bool {
     self.0.is_negative()
   }
+
+  fn format(&self, fmt: &mut Formatter<'_>, min_precision: usize) -> FmtResult {
+    let non_negative = !self.0.is_negative();
+    let prefix = "";
+
+    let precision = fmt.precision();
+    let value = self.round_with(precision.unwrap_or(MAX_PRECISION)).0.abs();
+    // We want to print out our value (which is a rational) as a
+    // floating point value, for which we need to perform some form of
+    // conversion. We do that using what is pretty much text book long
+    // division.
+    let string = format_impl(&value, String::new(), 0, min_precision, precision);
+    fmt.pad_integral(non_negative, prefix, &string)
+  }
 }
 
 impl Default for Num {
@@ -327,17 +346,8 @@ impl Debug for Num {
 
 impl Display for Num {
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
-    let non_negative = !self.0.is_negative();
-    let prefix = "";
-
-    let precision = fmt.precision();
-    let value = self.round_with(precision.unwrap_or(MAX_PRECISION)).0.abs();
-    // We want to print out our value (which is a rational) as a
-    // floating point value, for which we need to perform some form of
-    // conversion. We do that using what is pretty much text book long
-    // division.
-    let string = format_impl(&value, String::new(), 0, precision);
-    fmt.pad_integral(non_negative, prefix, &string)
+    let min_precision = 0;
+    self.format(fmt, min_precision)
   }
 }
 
