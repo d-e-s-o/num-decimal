@@ -153,6 +153,41 @@ impl StdError for ParseNumError {
 }
 
 
+/// An object providing more advanced displaying capabilities to `Num`.
+#[derive(Debug)]
+pub struct CustomDisplay<'n> {
+  /// The `Num` object to display.
+  num: &'n Num,
+  /// The minimum precision to use when displaying.
+  min_precision: Option<usize>,
+}
+
+impl<'n> CustomDisplay<'n> {
+  /// Create a new `CustomDisplay` object for displaying the given
+  /// `Num`.
+  fn new(num: &'n Num) -> Self {
+    Self {
+      num,
+      min_precision: None,
+    }
+  }
+
+  /// Set the minimum precision used when displaying.
+  ///
+  /// If actual precision is higher, more values will be printed.
+  pub fn min_precision(&mut self, min_precision: usize) -> &mut Self {
+    self.min_precision = Some(min_precision);
+    self
+  }
+}
+
+impl<'n> Display for CustomDisplay<'n> {
+  fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
+    self.num.format(fmt, self.min_precision.unwrap_or(0))
+  }
+}
+
+
 /// An unlimited precision number type with some improvements and
 /// customizations over `BigRational`.
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -253,6 +288,12 @@ impl Num {
     // division.
     let string = format_impl(&value, String::new(), 0, min_precision, precision);
     fmt.pad_integral(non_negative, prefix, &string)
+  }
+
+  /// Retrieve a display adapter that can be used for some more
+  /// elaborate formatting needs.
+  pub fn display(&self) -> CustomDisplay<'_> {
+    CustomDisplay::new(self)
   }
 }
 
