@@ -1,5 +1,5 @@
-Unreleased
-----------
+0.2.1
+-----
 - Added support for printing a `Num` with a minimum precision
 - Added export for `ParseNumError` error type
 
