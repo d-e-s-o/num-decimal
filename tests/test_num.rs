@@ -1,6 +1,8 @@
 // Copyright (C) 2020 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#![allow(clippy::unreadable_literal)]
+
 use std::i32;
 use std::ops::Neg;
 use std::str::FromStr;

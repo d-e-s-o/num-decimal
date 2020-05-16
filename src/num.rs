@@ -60,7 +60,7 @@ fn round_to_even(val: &BigRational) -> BigRational {
   let one = BigInt::from(1);
   let two = BigInt::from(2);
 
-  let zero_ = BigRational::new(zero.clone(), one.clone());
+  let zero_ = BigRational::new(zero, one.clone());
   let half = BigRational::new(one.clone(), two.clone());
   // Find unsigned fractional part of rational number.
   let mut fract = val.fract();
@@ -417,7 +417,7 @@ impl FromStr for Num {
 
     fn parse_str(s: &str, sign: Sign) -> Result<BigInt, ParseNumError> {
       if s.starts_with('-') || s.starts_with('+') {
-        Err(ParseNumError::InvalidStrError(s.to_owned()))?;
+        return Err(ParseNumError::InvalidStrError(s.to_owned()));
       }
 
       let num = BigInt::parse_bytes(s.as_bytes(), 10)
