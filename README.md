@@ -1,5 +1,7 @@
+[![pipeline](https://gitlab.com/d-e-s-o/num-decimal/badges/master/pipeline.svg)](https://gitlab.com/d-e-s-o/num-decimal/commits/master)
 [![crates.io](https://img.shields.io/crates/v/num-decimal.svg)](https://crates.io/crates/num-decimal)
 [![Docs](https://docs.rs/num-decimal/badge.svg)](https://docs.rs/num-decimal)
+[![rustc](https://img.shields.io/badge/rustc-1.42+-blue.svg)](https://blog.rust-lang.org/2020/03/12/Rust-1.42.html)
 
 num-decimal
 ===========

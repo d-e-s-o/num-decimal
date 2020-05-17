@@ -1,3 +1,10 @@
+Unreleased
+----------
+- Enabled CI pipeline comprising building, testing, and linting of the
+  project
+  - Added badge indicating pipeline status
+
+
 0.2.1
 -----
 - Added support for printing a `Num` with a minimum precision

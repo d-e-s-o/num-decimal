@@ -12,6 +12,9 @@ Infinite precision decimals with fair rounding and other gimmicks based
 on num-rational.
 """
 
+[badges]
+gitlab = { repository = "d-e-s-o/num-decimal", branch = "master" }
+
 [features]
 default = []
 
