@@ -3,6 +3,7 @@ Unreleased
 - Enabled CI pipeline comprising building, testing, linting, and
   coverage collection of the project
   - Added badges indicating pipeline status and code coverage percentage
+- Bumped required Rust version to `1.43`
 
 
 0.2.1
