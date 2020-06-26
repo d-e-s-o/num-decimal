@@ -3,6 +3,7 @@
 
 #![allow(clippy::unreadable_literal)]
 
+use std::convert::TryInto as _;
 use std::i32;
 use std::ops::Neg;
 use std::str::FromStr;
@@ -258,6 +259,28 @@ fn num_to_u64() {
 #[test]
 fn num_to_u64_overflow() {
   let val = Num::from_str("18446744073709551616").unwrap().to_u64();
+  assert_eq!(val, None);
+}
+
+#[test]
+fn num_to_f64() {
+  let val = Num::from_str("1.25").unwrap().to_f64().unwrap();
+  // We convert the float value into a string for comparison matters.
+  assert_eq!(val.to_string(), "1.25");
+
+  let val = Num::from_str("-1.25").unwrap().to_f64().unwrap();
+  assert_eq!(val.to_string(), "-1.25");
+}
+
+#[test]
+fn num_to_f64_failure() {
+  let count = f64::MAX_10_EXP.try_into().unwrap();
+  // Create a number large enough to not fit into an f64.
+  let num = (0..=count).fold(String::with_capacity(count), |mut num, _| {
+    num.push('9');
+    num
+  });
+  let val = Num::from_str(&num).unwrap().to_f64();
   assert_eq!(val, None);
 }
 

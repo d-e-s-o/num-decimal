@@ -1,5 +1,6 @@
 Unreleased
 ----------
+- Added support for converting a `Num` into a floating point number
 - Enabled CI pipeline comprising building, testing, linting, and
   coverage collection of the project
   - Added badges indicating pipeline status and code coverage percentage

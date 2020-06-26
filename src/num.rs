@@ -261,6 +261,20 @@ impl Num {
     self.to_integer().to_u64()
   }
 
+  /// Convert the given `Num` into a `f64`.
+  ///
+  /// `None` is returned if the numerator or the denominator cannot be
+  /// converted into an `f64`.
+  pub fn to_f64(&self) -> Option<f64> {
+    let numer = self.0.numer().to_f64();
+    let denom = self.0.denom().to_f64();
+
+    match (numer, denom) {
+      (Some(numer), Some(denom)) => Some(numer / denom),
+      _ => None,
+    }
+  }
+
   /// Check if the given `Num` is zero.
   pub fn is_zero(&self) -> bool {
     self.0.is_zero()
