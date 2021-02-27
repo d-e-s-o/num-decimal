@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Daniel Mueller <deso@posteo.net>
+// Copyright (C) 2019-2021 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #![allow(clippy::unreadable_literal)]
@@ -49,6 +49,8 @@
 //! contexts.
 
 mod num;
+#[cfg(feature = "serde")]
+mod ser;
 
 pub use crate::num::CustomDisplay;
 pub use crate::num::Num;
