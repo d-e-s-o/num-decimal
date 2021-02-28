@@ -1,3 +1,9 @@
+Unreleased
+----------
+- Added efficient serialization & deserializtion support for non
+  self-describing formats such as `bincode`
+
+
 0.2.2
 -----
 - Added support for converting a `Num` into a floating point number

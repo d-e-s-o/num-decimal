@@ -5,6 +5,10 @@ use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
 use std::str::FromStr as _;
 
+use num_bigint::BigInt;
+use num_bigint::Sign;
+use num_rational::BigRational;
+
 use serde::de::Error;
 use serde::de::Unexpected;
 use serde::de::Visitor;
@@ -14,6 +18,66 @@ use serde::Serialize;
 use serde::Serializer;
 
 use crate::Num;
+
+
+/// A sign type that can be serialized and deserialized.
+#[derive(Debug, Deserialize, Serialize)]
+#[repr(u8)]
+enum SerdeSign {
+  Minus,
+  NoSign,
+  Plus,
+}
+
+impl From<Sign> for SerdeSign {
+  fn from(other: Sign) -> Self {
+    match other {
+      Sign::Minus => Self::Minus,
+      Sign::NoSign => Self::NoSign,
+      Sign::Plus => Self::Plus,
+    }
+  }
+}
+
+impl Into<Sign> for SerdeSign {
+  fn into(self) -> Sign {
+    match self {
+      Self::Minus => Sign::Minus,
+      Self::NoSign => Sign::NoSign,
+      Self::Plus => Sign::Plus,
+    }
+  }
+}
+
+
+/// A tuple representing a ratio that can easily be serialized and
+/// deserialized.
+#[derive(Debug, Deserialize, Serialize)]
+struct SerdeRatio(SerdeSign, Vec<u8>, Vec<u8>);
+
+use std::ops::Mul as _;
+impl From<&Num> for SerdeRatio {
+  fn from(other: &Num) -> Self {
+    // We could get away without the dedicated `SerdeSign` type by using
+    // `BigInt::to_signed_bytes_le`, but that seems to be much more
+    // expensive, computationally.
+    let (nsign, nbytes) = other.0.numer().to_bytes_le();
+    let (dsign, dbytes) = other.0.denom().to_bytes_le();
+
+    Self(nsign.mul(dsign).into(), nbytes, dbytes)
+  }
+}
+
+impl Into<Num> for SerdeRatio {
+  fn into(self) -> Num {
+    let SerdeRatio(sign, nbytes, dbytes) = self;
+
+    let numer = BigInt::from_bytes_le(sign.into(), &nbytes);
+    let denom = BigInt::from_bytes_le(Sign::Plus, &dbytes);
+
+    Num(BigRational::new_raw(numer, denom))
+  }
+}
 
 
 impl<'de> Deserialize<'de> for Num {
@@ -69,7 +133,11 @@ impl<'de> Deserialize<'de> for Num {
       }
     }
 
-    deserializer.deserialize_any(HumanReadable)
+    if deserializer.is_human_readable() {
+      deserializer.deserialize_any(HumanReadable)
+    } else {
+      SerdeRatio::deserialize(deserializer).map(SerdeRatio::into)
+    }
   }
 }
 
@@ -79,7 +147,12 @@ impl Serialize for Num {
   where
     S: Serializer,
   {
-    serializer.serialize_str(&self.to_string())
+    if serializer.is_human_readable() {
+      serializer.serialize_str(&self.to_string())
+    } else {
+      let ratio = SerdeRatio::from(self);
+      SerdeRatio::serialize(&ratio, serializer)
+    }
   }
 }
 
@@ -87,6 +160,9 @@ impl Serialize for Num {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  use bincode::deserialize as from_bincode;
+  use bincode::serialize as to_bincode;
 
   use serde_json::from_str as from_json;
   use serde_json::to_string as to_json;
@@ -122,5 +198,33 @@ mod tests {
     let json = to_json(&num).unwrap();
 
     assert_eq!(json, r#""14827.9102""#);
+  }
+
+  /// Check that we can serialize to `bincode` and back.
+  #[test]
+  fn serialize_deserialize_bincode() {
+    let num = Num::from_str("13377.4290217").unwrap();
+    let new = from_bincode(&to_bincode(&num).unwrap()).unwrap();
+
+    assert_eq!(num, new);
+  }
+
+  /// Check that we can serialize a negative `Num` to `bincode` and
+  /// back.
+  #[test]
+  fn serialize_deserialize_bincode_negative() {
+    let num = Num::from_str("-13377.4290217").unwrap();
+    let new = from_bincode(&to_bincode(&num).unwrap()).unwrap();
+
+    assert_eq!(num, new);
+  }
+
+  /// Check that we can serialize zero to `bincode` and back.
+  #[test]
+  fn serialize_deserialize_bincode_zero() {
+    let num = Num::from(0usize);
+    let new = from_bincode(&to_bincode(&num).unwrap()).unwrap();
+
+    assert_eq!(num, new);
   }
 }

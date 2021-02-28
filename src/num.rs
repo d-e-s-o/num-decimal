@@ -178,7 +178,7 @@ impl<'n> Display for CustomDisplay<'n> {
 /// An unlimited precision number type with some improvements and
 /// customizations over `BigRational`.
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Num(BigRational);
+pub struct Num(pub(crate) BigRational);
 
 impl Num {
   /// Construct a `Num` from two integers.
