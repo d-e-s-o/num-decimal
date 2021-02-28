@@ -1,5 +1,5 @@
-Unreleased
-----------
+0.2.3
+-----
 - Added efficient serialization & deserializtion support for non
   self-describing formats such as `bincode`
 
