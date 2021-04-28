@@ -1,3 +1,8 @@
+Unreleased
+----------
+- Excluded unnecessary files from being contained in release bundle
+
+
 0.2.3
 -----
 - Added efficient serialization & deserializtion support for non
