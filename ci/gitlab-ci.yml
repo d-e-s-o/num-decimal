@@ -54,7 +54,7 @@ coverage:kcov:
     covs="";
     for file in ${files}; do
       cov="kcov-$(basename ${file})";
-      kcov --exclude-pattern=/usr/ --verify "${cov}" "${file}";
+      kcov --exclude-pattern="tests/test_num.rs" --verify "${cov}" "${file}";
       covs+=" ${cov}";
     done;
     kcov --merge kcov/ ${covs};
