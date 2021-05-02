@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Daniel Mueller <deso@posteo.net>
+// Copyright (C) 2020-2021 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #![allow(clippy::unreadable_literal)]
@@ -287,7 +287,7 @@ fn num_to_f64_failure() {
 #[test]
 fn num_from_invalid_str() {
   let err = Num::from_str("abc.+50").unwrap_err();
-  assert!(matches!(err, ParseNumError::ParseIntError(..)), err);
+  assert!(matches!(err, ParseNumError::ParseIntError(..)), "{}", err);
 
   let err = Num::from_str("1992.+50").unwrap_err();
   assert_eq!(err, ParseNumError::InvalidStrError("+50".to_string()));
