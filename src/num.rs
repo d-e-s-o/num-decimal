@@ -6,6 +6,8 @@ use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
+#[cfg(not(feature = "num-v02"))]
+use std::num::FpCategory;
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Div;
@@ -19,14 +21,15 @@ use std::ops::Sub;
 use std::ops::SubAssign;
 use std::str::FromStr;
 
-use num_bigint::BigInt;
-use num_bigint::ParseBigIntError;
-use num_bigint::Sign;
-use num_rational::BigRational;
 use num_traits::cast::ToPrimitive;
 use num_traits::identities::Zero;
 use num_traits::pow::Pow;
 use num_traits::sign::Signed;
+
+use crate::num_bigint::BigInt;
+use crate::num_bigint::ParseBigIntError;
+use crate::num_bigint::Sign;
+use crate::num_rational::BigRational;
 
 
 /// The maximum precision we use when converting a `Num` into a string.
@@ -257,7 +260,18 @@ impl Num {
     let denom = self.0.denom().to_f64();
 
     match (numer, denom) {
+      #[cfg(feature = "num-v02")]
       (Some(numer), Some(denom)) => Some(numer / denom),
+      #[cfg(not(feature = "num-v02"))]
+      (Some(numer), Some(denom)) => {
+        if !matches!(numer.classify(), FpCategory::Normal | FpCategory::Zero) {
+          return None
+        }
+        if !matches!(denom.classify(), FpCategory::Normal | FpCategory::Zero) {
+          return None
+        }
+        Some(numer / denom)
+      },
       _ => None,
     }
   }

@@ -8,10 +8,10 @@ use std::i32;
 use std::ops::Neg;
 use std::str::FromStr;
 
-use num_bigint::BigInt;
 use num_traits::NumAssignOps;
 use num_traits::NumOps;
 
+use num_decimal::num_bigint::BigInt;
 use num_decimal::Num;
 use num_decimal::ParseNumError;
 

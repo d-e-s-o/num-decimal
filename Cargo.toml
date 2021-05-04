@@ -17,11 +17,15 @@ include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 gitlab = { repository = "d-e-s-o/num-decimal", branch = "master" }
 
 [features]
-default = []
+default = ["num-v02"]
+num-v02 = ["num-bigint-v02", "num-rational-v02"]
+num-v03 = ["num-bigint-v03", "num-rational-v03"]
 
 [dependencies]
-num-bigint = "0.2"
-num-rational = "0.2"
+num-bigint-v02 = {version = "0.2", package = "num-bigint", optional = true}
+num-rational-v02 = {version = "0.2", package = "num-rational", optional = true}
+num-bigint-v03 = {version = "0.3", package = "num-bigint", optional = true}
+num-rational-v03 = {version = "0.3", package = "num-rational", optional = true}
 num-traits = "0.2"
 serde = {version = "1.0", default-features = false, features = ["derive"], optional = true}
 

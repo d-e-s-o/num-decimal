@@ -1,5 +1,8 @@
 Unreleased
 ----------
+- Added `num-v03` feature for using `num-*` crates in version `0.3`
+  - Added `num-v02` (enabled by default) for `0.2` variants
+- Added re-exports of `num_bigint` and `num_rational` crates
 - Excluded unnecessary files from being contained in release bundle
 
 

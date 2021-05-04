@@ -5,10 +5,6 @@ use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
 use std::str::FromStr as _;
 
-use num_bigint::BigInt;
-use num_bigint::Sign;
-use num_rational::BigRational;
-
 use serde::de::Error;
 use serde::de::Unexpected;
 use serde::de::Visitor;
@@ -17,6 +13,9 @@ use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
 
+use crate::num_bigint::BigInt;
+use crate::num_bigint::Sign;
+use crate::num_rational::BigRational;
 use crate::Num;
 
 
