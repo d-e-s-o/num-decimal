@@ -48,17 +48,17 @@
 //! A crate containing a number type suitable for use in financial
 //! contexts.
 
-#[cfg(all(feature = "num-v02", feature = "num-v03"))]
-compile_error!("Only one of the features 'num-v02' and 'num-v03' can be enabled");
+#[cfg(all(feature = "num-v02", feature = "num-v04"))]
+compile_error!("Only one of the features 'num-v02' and 'num-v04' can be enabled");
 
 #[cfg(feature = "num-v02")]
 pub use num_bigint_v02 as num_bigint;
-#[cfg(feature = "num-v03")]
-pub use num_bigint_v03 as num_bigint;
+#[cfg(feature = "num-v04")]
+pub use num_bigint_v04 as num_bigint;
 #[cfg(feature = "num-v02")]
 pub use num_rational_v02 as num_rational;
-#[cfg(feature = "num-v03")]
-pub use num_rational_v03 as num_rational;
+#[cfg(feature = "num-v04")]
+pub use num_rational_v04 as num_rational;
 
 mod num;
 #[cfg(feature = "serde")]

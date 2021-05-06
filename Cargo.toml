@@ -19,13 +19,13 @@ gitlab = { repository = "d-e-s-o/num-decimal", branch = "master" }
 [features]
 default = ["num-v02"]
 num-v02 = ["num-bigint-v02", "num-rational-v02"]
-num-v03 = ["num-bigint-v03", "num-rational-v03"]
+num-v04 = ["num-bigint-v04", "num-rational-v04"]
 
 [dependencies]
 num-bigint-v02 = {version = "0.2", package = "num-bigint", optional = true}
 num-rational-v02 = {version = "0.2", package = "num-rational", optional = true}
-num-bigint-v03 = {version = "0.3", package = "num-bigint", optional = true}
-num-rational-v03 = {version = "0.3", package = "num-rational", optional = true}
+num-bigint-v04 = {version = "0.4", package = "num-bigint", optional = true}
+num-rational-v04 = {version = "0.4", package = "num-rational", optional = true}
 num-traits = "0.2"
 serde = {version = "1.0", default-features = false, features = ["derive"], optional = true}
 

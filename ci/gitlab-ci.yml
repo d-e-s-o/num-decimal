@@ -20,8 +20,8 @@ build:cargo:
   - rustc --version && cargo --version
   - cargo build --lib --tests --features=serde --verbose
   - cargo build --lib --tests --features=serde --verbose --release
-  - cargo build --lib --tests --features=serde,num-v03 --no-default-features --verbose
-  - cargo build --lib --tests --features=serde,num-v03 --no-default-features --verbose --release
+  - cargo build --lib --tests --features=serde,num-v04 --no-default-features --verbose
+  - cargo build --lib --tests --features=serde,num-v04 --no-default-features --verbose --release
 
 test:cargo:
   stage: test
@@ -29,7 +29,7 @@ test:cargo:
   - build:cargo
   script:
   - cargo test --features=serde --verbose
-  - cargo test --features=serde,num-v03 --no-default-features --verbose
+  - cargo test --features=serde,num-v04 --no-default-features --verbose
 
 lint:clippy:
   stage: test
