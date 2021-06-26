@@ -13,9 +13,6 @@ on num-rational.
 """
 include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 
-[badges]
-gitlab = { repository = "d-e-s-o/num-decimal", branch = "master" }
-
 [features]
 default = ["num-v02"]
 num-v02 = ["num-bigint-v02", "num-rational-v02"]
