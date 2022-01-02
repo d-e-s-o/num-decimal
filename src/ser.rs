@@ -1,4 +1,4 @@
-// Copyright (C) 2021 Daniel Mueller <deso@posteo.net>
+// Copyright (C) 2021-2022 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::fmt::Formatter;
@@ -105,18 +105,14 @@ impl<'de> Deserialize<'de> for Num {
       where
         E: Error,
       {
-        let s = format!("{}.0", v.to_string());
-        Num::from_str(&s)
-          .map_err(|_| Error::invalid_value(Unexpected::Str(&s), &"a signed integer"))
+        Ok(Num::from(v))
       }
 
       fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
       where
         E: Error,
       {
-        let s = format!("{}.0", v.to_string());
-        Num::from_str(&s)
-          .map_err(|_| Error::invalid_value(Unexpected::Str(&s), &"an unsigned integer"))
+        Ok(Num::from(v))
       }
 
       fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
