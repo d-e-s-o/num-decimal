@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Daniel Mueller <deso@posteo.net>
+// Copyright (C) 2020-2022 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #![allow(clippy::unreadable_literal)]
@@ -182,6 +182,14 @@ fn num_minimum_precision() {
   assert_eq!(format!("{}", Num::new(2, 3).display()), "0.66666667");
   assert_eq!(format!("{:.2}", Num::new(1, 3).display()), "0.33");
   assert_eq!(format!("{:.2}", Num::new(2, 3).display()), "0.67");
+}
+
+/// Check that our [`Num`] debug representation is as expected.
+#[test]
+fn num_debug_format() {
+  assert_eq!(format!("{:?}", Num::new(1, 2)), "1/2");
+  assert_eq!(format!("{:?}", Num::new(1, -3)), "-1/3");
+  assert_eq!(format!("{:?}", Num::new(-3, 8)), "-3/8");
 }
 
 #[test]
