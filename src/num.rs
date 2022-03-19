@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2021 Daniel Mueller <deso@posteo.net>
+// Copyright (C) 2019-2022 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::error::Error as StdError;
@@ -30,6 +30,8 @@ use crate::num_bigint::BigInt;
 use crate::num_bigint::ParseBigIntError;
 use crate::num_bigint::Sign;
 use crate::num_rational::BigRational;
+use crate::num_rational::Rational32;
+use crate::num_rational::Rational64;
 
 
 /// The maximum precision we use when converting a `Num` into a string.
@@ -178,10 +180,20 @@ impl<'n> Display for CustomDisplay<'n> {
 }
 
 
-/// An unlimited precision number type with some improvements and
-/// customizations over `BigRational`.
-#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Num(pub(crate) BigRational);
+macro_rules! impl_num {
+  ($(#[$meta:meta])* pub struct $name:ident($rational:ty)) => {
+    $(#[$meta])*
+    pub struct $name(pub(crate) $rational);
+  };
+}
+
+
+impl_num! {
+  /// An unlimited precision number type with some improvements and
+  /// customizations over [`BigRational`].
+  #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
+  pub struct Num(BigRational)
+}
 
 impl Num {
   /// Construct a `Num` from two integers.
@@ -524,3 +536,30 @@ impl_assign_ops!(impl SubAssign, sub_assign);
 impl_assign_ops!(impl MulAssign, mul_assign);
 impl_assign_ops!(impl DivAssign, div_assign);
 impl_assign_ops!(impl RemAssign, rem_assign);
+
+
+impl_num! {
+  /// A fixed size number type with some improvements and customizations
+  /// over [`Rational32`].
+  ///
+  /// Please note that this type is meant to be used mostly in scenarios
+  /// where memory boundedness is of paramount importance. Importantly,
+  /// it does *not* constitute a fully blown replacement for [`Num`], as
+  /// the provided functionality is much more limited (and likely will
+  /// never catch up completely).
+  #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+  pub struct Num32(Rational32)
+}
+
+impl_num! {
+  /// A fixed size number type with some improvements and customizations
+  /// over [`Rational64`].
+  ///
+  /// Please note that this type is meant to be used mostly in scenarios
+  /// where memory boundedness is of paramount importance. Importantly,
+  /// it does *not* constitute a fully blown replacement for [`Num`], as
+  /// the provided functionality is much more limited (and likely will
+  /// never catch up completely).
+  #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+  pub struct Num64(Rational64)
+}

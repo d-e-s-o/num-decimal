@@ -1,3 +1,9 @@
+Unreleased
+----------
+- Introduced `Num32` and `Num64` types with fixed size and limited
+  precision
+
+
 0.2.4
 -----
 - Added `num-v04` feature for using `num-*` crates in version `0.4`
@@ -8,7 +14,7 @@
 
 0.2.3
 -----
-- Added efficient serialization & deserializtion support for non
+- Added efficient serialization & deserialization support for non
   self-describing formats such as `bincode`
 
 
