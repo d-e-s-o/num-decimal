@@ -181,9 +181,23 @@ impl<'n> Display for CustomDisplay<'n> {
 
 
 macro_rules! impl_num {
-  ($(#[$meta:meta])* pub struct $name:ident($rational:ty)) => {
+  ($(#[$meta:meta])* pub struct $name:ident($rational:ty), $int:ty) => {
     $(#[$meta])*
     pub struct $name(pub(crate) $rational);
+
+    impl $name {
+      /// Construct a rational number from its two components.
+      pub fn new<T, U>(numer: T, denom: U) -> Self
+      where
+        $int: From<T>,
+        $int: From<U>,
+      {
+        let numer = <$int>::from(numer);
+        let denom = <$int>::from(denom);
+
+        Self(<$rational>::new(numer, denom))
+      }
+    }
   };
 }
 
@@ -192,22 +206,10 @@ impl_num! {
   /// An unlimited precision number type with some improvements and
   /// customizations over [`BigRational`].
   #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
-  pub struct Num(BigRational)
+  pub struct Num(BigRational), BigInt
 }
 
 impl Num {
-  /// Construct a `Num` from two integers.
-  pub fn new<T, U>(numer: T, denom: U) -> Self
-  where
-    BigInt: From<T>,
-    BigInt: From<U>,
-  {
-    let numer = BigInt::from(numer);
-    let denom = BigInt::from(denom);
-
-    Num(BigRational::new(numer, denom))
-  }
-
   /// Round the given `Num` to the nearest integer.
   ///
   /// Rounding happens based on the Round-Half-To-Even scheme (also
@@ -548,7 +550,7 @@ impl_num! {
   /// the provided functionality is much more limited (and likely will
   /// never catch up completely).
   #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-  pub struct Num32(Rational32)
+  pub struct Num32(Rational32), i32
 }
 
 impl_num! {
@@ -561,5 +563,5 @@ impl_num! {
   /// the provided functionality is much more limited (and likely will
   /// never catch up completely).
   #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-  pub struct Num64(Rational64)
+  pub struct Num64(Rational64), i64
 }
