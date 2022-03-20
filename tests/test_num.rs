@@ -13,6 +13,8 @@ use num_traits::NumOps;
 
 use num_decimal::num_bigint::BigInt;
 use num_decimal::Num;
+use num_decimal::Num32;
+use num_decimal::Num64;
 use num_decimal::ParseNumError;
 
 
@@ -190,6 +192,22 @@ fn num_debug_format() {
   assert_eq!(format!("{:?}", Num::new(1, 2)), "1/2");
   assert_eq!(format!("{:?}", Num::new(1, -3)), "-1/3");
   assert_eq!(format!("{:?}", Num::new(-3, 8)), "-3/8");
+}
+
+/// Check that our [`Num32`] debug representation is as expected.
+#[test]
+fn num32_debug_format() {
+  assert_eq!(format!("{:?}", Num32::new(1, 2)), "1/2");
+  assert_eq!(format!("{:?}", Num32::new(1, -3)), "-1/3");
+  assert_eq!(format!("{:?}", Num32::new(-3, 8)), "-3/8");
+}
+
+/// Check that our [`Num64`] debug representation is as expected.
+#[test]
+fn num64_debug_format() {
+  assert_eq!(format!("{:?}", Num64::new(1, 2)), "1/2");
+  assert_eq!(format!("{:?}", Num64::new(1, -3)), "-1/3");
+  assert_eq!(format!("{:?}", Num64::new(-3, 8)), "-3/8");
 }
 
 #[test]

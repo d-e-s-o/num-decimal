@@ -198,6 +198,20 @@ macro_rules! impl_num {
         Self(<$rational>::new(numer, denom))
       }
     }
+
+    // The default `Debug` implementation is way too verbose. We have no
+    // intention of debugging the underlying Rational type itself. So we
+    // overwrite it here, effectively printing a fraction.
+    impl Debug for $name {
+      fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
+        // We maintain the invariant that the numerator determines the sign
+        // and that the denominator is always positive (as it can never be
+        // zero).
+        debug_assert!(self.0.denom().is_positive());
+
+        write!(fmt, "{}/{}", self.0.numer(), self.0.denom())
+      }
+    }
   };
 }
 
@@ -329,20 +343,6 @@ impl Num {
 impl Default for Num {
   fn default() -> Self {
     Num::from(0)
-  }
-}
-
-// The default `Debug` implementation is way too verbose. We have no
-// intention of debugging `BigRational` itself. So we overwrite it here,
-// effectively printing a fraction.
-impl Debug for Num {
-  fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
-    // We maintain the invariant that the numerator determines the sign
-    // and that the denominator is always positive (as it can never be
-    // zero).
-    debug_assert!(self.0.denom().is_positive());
-
-    write!(fmt, "{}/{}", self.0.numer(), self.0.denom())
   }
 }
 
@@ -549,7 +549,7 @@ impl_num! {
   /// it does *not* constitute a fully blown replacement for [`Num`], as
   /// the provided functionality is much more limited (and likely will
   /// never catch up completely).
-  #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+  #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
   pub struct Num32(Rational32), i32
 }
 
@@ -562,6 +562,6 @@ impl_num! {
   /// it does *not* constitute a fully blown replacement for [`Num`], as
   /// the provided functionality is much more limited (and likely will
   /// never catch up completely).
-  #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+  #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
   pub struct Num64(Rational64), i64
 }
