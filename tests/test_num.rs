@@ -25,54 +25,54 @@ fn default_num() {
 }
 
 #[test]
-fn num_from_int() {
+fn num_from_int_str() {
   let num = Num::from_str("42").unwrap();
   assert_eq!(num, Num::from(42));
 }
 
 #[test]
-fn num_from_neg_int() {
+fn num_from_neg_int_str() {
   let num = Num::from_str("-37").unwrap();
   assert_eq!(num, Num::from(-37));
 }
 
 #[test]
-fn num_from_min_neg_int() {
+fn num_from_min_neg_int_str() {
   let min = i32::MIN + 1;
   let num = Num::from_str(&min.to_string()).unwrap();
   assert_eq!(num, Num::from(-2147483647));
 }
 
 #[test]
-fn num_from_float() {
+fn num_from_float_str() {
   let num = Num::from_str("4000.32").unwrap();
   assert_eq!(num, Num::new(400032, 100));
 }
 
 #[test]
-fn num_from_small_float() {
+fn num_from_small_float_str() {
   let num = Num::from_str("0.20").unwrap();
   assert_eq!(num, Num::new(20, 100));
 }
 
 #[test]
-fn num_from_long_float() {
+fn num_from_long_float_str() {
   let _ = Num::from_str("207.5873333333333333").unwrap();
 }
 
 #[test]
-fn num_from_long_neg_float() {
+fn num_from_long_neg_float_str() {
   let _ = Num::from_str("-207.5873333333333333").unwrap();
 }
 
 #[test]
-fn num_from_small_neg_float() {
+fn num_from_small_neg_float_str() {
   let num = Num::from_str("-0.20").unwrap();
   assert_eq!(num, Num::new(-20, 100));
 }
 
 #[test]
-fn num_from_neg_float() {
+fn num_from_neg_float_str() {
   let num = Num::from_str("-125.398").unwrap();
   assert_eq!(num, Num::new(-125398, 1000));
 }
