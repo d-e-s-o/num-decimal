@@ -553,6 +553,17 @@ impl_num! {
   pub struct Num32(Rational32), i32
 }
 
+impl<T> From<T> for Num32
+where
+  i32: From<T>,
+{
+  #[inline]
+  fn from(val: T) -> Self {
+    Self(Rational32::from(i32::from(val)))
+  }
+}
+
+
 impl_num! {
   /// A fixed size number type with some improvements and customizations
   /// over [`Rational64`].
@@ -564,4 +575,14 @@ impl_num! {
   /// never catch up completely).
   #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
   pub struct Num64(Rational64), i64
+}
+
+impl<T> From<T> for Num64
+where
+  i64: From<T>,
+{
+  #[inline]
+  fn from(val: T) -> Self {
+    Self(Rational64::from(i64::from(val)))
+  }
 }

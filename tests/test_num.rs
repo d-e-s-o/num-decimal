@@ -24,6 +24,27 @@ fn default_num() {
   assert_eq!(num, Num::from(0));
 }
 
+/// Check that we can create a new [`Num`] object from an integer.
+#[test]
+fn num_from_int() {
+  let num = Num::from(-1234567);
+  assert_eq!(num, Num::new(-1234567, 1));
+}
+
+/// Check that we can create a new [`Num32`] object from an integer.
+#[test]
+fn num32_from_int() {
+  let num = Num::from(98765);
+  assert_eq!(num, Num::new(98765, 1));
+}
+
+/// Check that we can create a new [`Num64`] object from an integer.
+#[test]
+fn num64_from_int() {
+  let num = Num::from(-1);
+  assert_eq!(num, Num::new(-1, 1));
+}
+
 #[test]
 fn num_from_int_str() {
   let num = Num::from_str("42").unwrap();
