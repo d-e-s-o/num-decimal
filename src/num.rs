@@ -199,6 +199,12 @@ macro_rules! impl_num {
       }
     }
 
+    impl Default for $name {
+      fn default() -> Self {
+        <$name>::from(0)
+      }
+    }
+
     // The default `Debug` implementation is way too verbose. We have no
     // intention of debugging the underlying Rational type itself. So we
     // overwrite it here, effectively printing a fraction.
@@ -337,12 +343,6 @@ impl Num {
   /// elaborate formatting needs.
   pub fn display(&self) -> CustomDisplay<'_> {
     CustomDisplay::new(self)
-  }
-}
-
-impl Default for Num {
-  fn default() -> Self {
-    Num::from(0)
   }
 }
 

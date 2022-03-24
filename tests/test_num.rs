@@ -18,10 +18,25 @@ use num_decimal::Num64;
 use num_decimal::ParseNumError;
 
 
+/// Check that we can default create a [`Num`].
 #[test]
 fn default_num() {
   let num = Num::default();
   assert_eq!(num, Num::from(0));
+}
+
+/// Check that we can default create a [`Num32`].
+#[test]
+fn default_num32() {
+  let num = Num32::default();
+  assert_eq!(num, Num32::from(0));
+}
+
+/// Check that we can default create a [`Num64`].
+#[test]
+fn default_num64() {
+  let num = Num64::default();
+  assert_eq!(num, Num64::from(0));
 }
 
 /// Check that we can create a new [`Num`] object from an integer.
