@@ -588,13 +588,7 @@ fn debug_format() {
 fn from() {
   assert_eq!(&Num::from(42usize).to_string(), "42");
   assert_eq!(&Num::from(255u8).to_string(), "255");
-  assert_eq!(
-    Num::from(u128::max_value()).to_string(),
-    u128::max_value().to_string()
-  );
-  assert_eq!(
-    Num::from(i128::min_value()).to_string(),
-    i128::min_value().to_string()
-  );
+  assert_eq!(Num::from(u128::MAX).to_string(), u128::MAX.to_string());
+  assert_eq!(Num::from(i128::MIN).to_string(), i128::MIN.to_string());
   assert_eq!(&Num::from(BigInt::from(1)).to_string(), "1");
 }
