@@ -1,6 +1,7 @@
 // Copyright (C) 2019-2022 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use std::convert::TryFrom;
 use std::error::Error as StdError;
 use std::fmt::Debug;
 use std::fmt::Display;
@@ -540,6 +541,22 @@ impl_assign_ops!(impl DivAssign, div_assign);
 impl_assign_ops!(impl RemAssign, rem_assign);
 
 
+macro_rules! impl_try_from {
+  ($lhs:ty, $rhs:ty, $to_int:ident) => {
+    impl TryFrom<$rhs> for $lhs {
+      type Error = ();
+
+      fn try_from(other: $rhs) -> Result<Self, Self::Error> {
+        let numer = other.0.numer().$to_int().ok_or(())?;
+        let denom = other.0.denom().$to_int().ok_or(())?;
+
+        Ok(Self::new(numer, denom))
+      }
+    }
+  };
+}
+
+
 impl_num! {
   /// A fixed size number type with some improvements and customizations
   /// over [`Rational32`].
@@ -562,6 +579,9 @@ where
     Self(Rational32::from(i32::from(val)))
   }
 }
+
+impl_try_from!(Num32, Num, to_i32);
+impl_try_from!(Num32, &Num, to_i32);
 
 
 impl_num! {
@@ -586,3 +606,6 @@ where
     Self(Rational64::from(i64::from(val)))
   }
 }
+
+impl_try_from!(Num64, Num, to_i64);
+impl_try_from!(Num64, &Num, to_i64);

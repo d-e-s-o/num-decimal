@@ -1,7 +1,10 @@
 // Copyright (C) 2019-2022 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#![allow(clippy::unreadable_literal)]
+#![allow(
+  clippy::let_unit_value,
+  clippy::unreadable_literal,
+)]
 #![warn(
   bad_style,
   broken_intra_doc_links,

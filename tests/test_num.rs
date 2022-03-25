@@ -1,8 +1,12 @@
 // Copyright (C) 2020-2022 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#![allow(clippy::unreadable_literal)]
+#![allow(
+  clippy::let_unit_value,
+  clippy::unreadable_literal,
+)]
 
+use std::convert::TryFrom as _;
 use std::convert::TryInto as _;
 use std::i32;
 use std::ops::Neg;
@@ -58,6 +62,40 @@ fn num32_from_int() {
 fn num64_from_int() {
   let num = Num::from(-1);
   assert_eq!(num, Num::new(-1, 1));
+}
+
+/// Check that we can convert a [`Num`] into a [`Num32`], assuming that
+/// it can be represented.
+#[test]
+fn num32_from_num() {
+  let num = Num::new(1234567, 31289);
+  let num32 = Num32::try_from(num).unwrap();
+  assert_eq!(num32, Num32::new(1234567, 31289));
+}
+
+/// Check that conversion of a [`Num`] into a [`Num32`] fails if it
+/// cannot be represented correctly.
+#[test]
+fn num32_from_num_failure() {
+  let num = Num::new(u64::MAX, 1);
+  let () = Num32::try_from(&num).unwrap_err();
+}
+
+/// Check that we can convert a [`Num`] into a [`Num64`], assuming that
+/// it can be represented.
+#[test]
+fn num64_from_num() {
+  let num = Num::new(1234567, 31289);
+  let num64 = Num64::try_from(&num).unwrap();
+  assert_eq!(num64, Num64::new(1234567, 31289));
+}
+
+/// Check that conversion of a [`Num`] into a [`Num64`] fails if it
+/// cannot be represented correctly.
+#[test]
+fn num64_from_num_failure() {
+  let num = Num::new(u128::MAX, 1);
+  let () = Num64::try_from(num).unwrap_err();
 }
 
 #[test]
