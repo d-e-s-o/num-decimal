@@ -98,6 +98,33 @@ fn num64_from_num_failure() {
   let () = Num64::try_from(num).unwrap_err();
 }
 
+/// Check that we can convert a [`Num`] into its constituent numerator
+/// and denominator.
+#[test]
+fn num_into() {
+  let num = Num::new(1234567, 98765);
+  assert_eq!(
+    <(BigInt, BigInt)>::from(num),
+    (BigInt::from(1234567), BigInt::from(98765))
+  );
+}
+
+/// Check that we can convert a [`Num32`] into its constituent numerator
+/// and denominator.
+#[test]
+fn num32_into() {
+  let num32 = Num32::new(1234567, 98765);
+  assert_eq!(<(i32, i32)>::from(num32), (1234567, 98765));
+}
+
+/// Check that we can convert a [`Num64`] into its constituent numerator
+/// and denominator.
+#[test]
+fn num64_into() {
+  let num64 = Num64::new(1234567, 98765);
+  assert_eq!(<(i64, i64)>::from(num64), (1234567, 98765));
+}
+
 #[test]
 fn num_from_int_str() {
   let num = Num::from_str("42").unwrap();

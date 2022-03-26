@@ -206,6 +206,13 @@ macro_rules! impl_num {
       }
     }
 
+    impl From<$name> for ($int, $int) {
+      #[inline]
+      fn from(other: $name) -> Self {
+        other.0.into()
+      }
+    }
+
     // The default `Debug` implementation is way too verbose. We have no
     // intention of debugging the underlying Rational type itself. So we
     // overwrite it here, effectively printing a fraction.

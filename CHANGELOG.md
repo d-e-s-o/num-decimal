@@ -2,6 +2,8 @@ Unreleased
 ----------
 - Introduced `Num32` and `Num64` types with fixed size and limited
   precision
+- Added support for converting number types into a pair of their
+  components
 
 
 0.2.4
