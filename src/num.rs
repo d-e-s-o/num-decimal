@@ -122,12 +122,14 @@ pub enum ParseNumError {
 }
 
 impl From<ParseBigIntError> for ParseNumError {
+  #[inline]
   fn from(e: ParseBigIntError) -> Self {
     Self::ParseIntError(e)
   }
 }
 
 impl Display for ParseNumError {
+  #[inline]
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
     match self {
       Self::InvalidStrError(s) => write!(fmt, "{}", s),
@@ -137,6 +139,7 @@ impl Display for ParseNumError {
 }
 
 impl StdError for ParseNumError {
+  #[inline]
   fn source(&self) -> Option<&(dyn StdError + 'static)> {
     match self {
       Self::InvalidStrError(..) => None,
@@ -158,6 +161,7 @@ pub struct CustomDisplay<'n> {
 impl<'n> CustomDisplay<'n> {
   /// Create a new `CustomDisplay` object for displaying the given
   /// `Num`.
+  #[inline]
   fn new(num: &'n Num) -> Self {
     Self {
       num,
@@ -168,6 +172,7 @@ impl<'n> CustomDisplay<'n> {
   /// Set the minimum precision used when displaying.
   ///
   /// If actual precision is higher, more values will be printed.
+  #[inline]
   pub fn min_precision(&mut self, min_precision: usize) -> &mut Self {
     self.min_precision = Some(min_precision);
     self
@@ -175,6 +180,7 @@ impl<'n> CustomDisplay<'n> {
 }
 
 impl<'n> Display for CustomDisplay<'n> {
+  #[inline]
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
     self.num.format(fmt, self.min_precision.unwrap_or(0))
   }
@@ -188,6 +194,7 @@ macro_rules! impl_num {
 
     impl $name {
       /// Construct a rational number from its two components.
+      #[inline]
       pub fn new<T, U>(numer: T, denom: U) -> Self
       where
         $int: From<T>,
@@ -201,6 +208,7 @@ macro_rules! impl_num {
     }
 
     impl Default for $name {
+      #[inline]
       fn default() -> Self {
         <$name>::from(0)
       }
@@ -217,6 +225,7 @@ macro_rules! impl_num {
     // intention of debugging the underlying Rational type itself. So we
     // overwrite it here, effectively printing a fraction.
     impl Debug for $name {
+      #[inline]
       fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
         // We maintain the invariant that the numerator determines the sign
         // and that the denominator is always positive (as it can never be
@@ -245,6 +254,7 @@ impl Num {
   /// closest integer as expected but if the fractional part is exactly
   /// 1/2 (i.e., equidistant from two integers) it rounds to the even
   /// one of the two.
+  #[inline]
   pub fn round(&self) -> Self {
     self.round_with(0)
   }
@@ -261,16 +271,19 @@ impl Num {
   }
 
   /// Round the given `Num` towards zero.
+  #[inline]
   pub fn trunc(&self) -> Self {
     Num(self.0.trunc())
   }
 
   /// Return the fractional part of the given `Num`, with division rounded towards zero.
+  #[inline]
   pub fn fract(&self) -> Self {
     Num(self.0.fract())
   }
 
   /// Convert the given `Num` to an integer, rounding towards zero.
+  #[inline]
   pub fn to_integer(&self) -> BigInt {
     self.0.to_integer()
   }
@@ -280,6 +293,7 @@ impl Num {
   /// The value will be converted into an integer, with rounding towards
   /// zero. `None` is returned if the resulting integer does not fit
   /// into 64 bit.
+  #[inline]
   pub fn to_i64(&self) -> Option<i64> {
     self.to_integer().to_i64()
   }
@@ -289,6 +303,7 @@ impl Num {
   /// The value will be converted into an integer, with rounding towards
   /// zero. `None` is returned if the resulting integer does not fit
   /// into 64 bit.
+  #[inline]
   pub fn to_u64(&self) -> Option<u64> {
     self.to_integer().to_u64()
   }
@@ -319,16 +334,19 @@ impl Num {
   }
 
   /// Check if the given `Num` is zero.
+  #[inline]
   pub fn is_zero(&self) -> bool {
     self.0.is_zero()
   }
 
   /// Check if the given `Num` is positive.
+  #[inline]
   pub fn is_positive(&self) -> bool {
     self.0.is_positive()
   }
 
   /// Check if the given `Num` is negative.
+  #[inline]
   pub fn is_negative(&self) -> bool {
     self.0.is_negative()
   }
@@ -349,12 +367,14 @@ impl Num {
 
   /// Retrieve a display adapter that can be used for some more
   /// elaborate formatting needs.
+  #[inline]
   pub fn display(&self) -> CustomDisplay<'_> {
     CustomDisplay::new(self)
   }
 }
 
 impl Display for Num {
+  #[inline]
   fn fmt(&self, fmt: &mut Formatter<'_>) -> FmtResult {
     let min_precision = 0;
     self.format(fmt, min_precision)

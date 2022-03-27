@@ -3,6 +3,7 @@
 
 use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
+use std::ops::Mul as _;
 use std::str::FromStr as _;
 
 use serde::de::Error;
@@ -29,6 +30,7 @@ enum SerdeSign {
 }
 
 impl From<Sign> for SerdeSign {
+  #[inline]
   fn from(other: Sign) -> Self {
     match other {
       Sign::Minus => Self::Minus,
@@ -39,6 +41,7 @@ impl From<Sign> for SerdeSign {
 }
 
 impl Into<Sign> for SerdeSign {
+  #[inline]
   fn into(self) -> Sign {
     match self {
       Self::Minus => Sign::Minus,
@@ -54,7 +57,6 @@ impl Into<Sign> for SerdeSign {
 #[derive(Debug, Deserialize, Serialize)]
 struct SerdeRatio(SerdeSign, Vec<u8>, Vec<u8>);
 
-use std::ops::Mul as _;
 impl From<&Num> for SerdeRatio {
   fn from(other: &Num) -> Self {
     // We could get away without the dedicated `SerdeSign` type by using
@@ -89,10 +91,12 @@ impl<'de> Deserialize<'de> for Num {
     impl<'de> Visitor<'de> for HumanReadable {
       type Value = Num;
 
+      #[inline]
       fn expecting(&self, formatter: &mut Formatter<'_>) -> FmtResult {
         formatter.write_str("a float, an integer, or a string representing either")
       }
 
+      #[inline]
       fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
       where
         E: Error,
@@ -101,6 +105,7 @@ impl<'de> Deserialize<'de> for Num {
           .map_err(|_| Error::invalid_value(Unexpected::Str(&s), &"a stringified integer/float"))
       }
 
+      #[inline]
       fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
       where
         E: Error,
@@ -108,6 +113,7 @@ impl<'de> Deserialize<'de> for Num {
         Ok(Num::from(v))
       }
 
+      #[inline]
       fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
       where
         E: Error,
@@ -115,6 +121,7 @@ impl<'de> Deserialize<'de> for Num {
         Ok(Num::from(v))
       }
 
+      #[inline]
       fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
       where
         E: Error,
