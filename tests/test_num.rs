@@ -98,6 +98,100 @@ fn num64_from_num_failure() {
   let () = Num64::try_from(num).unwrap_err();
 }
 
+/// Check that we can approximate a [`Num`] with a [`Num32`] when the
+/// number can't really be represented.
+#[test]
+fn num32_approximate_out_of_bounds_num() {
+  let num = Num::new(i128::MAX, 1);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(i32::MAX, 1));
+
+  let num = Num::new(i128::MIN, 1);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(i32::MIN, 1));
+
+  let num = Num::new(i128::MAX, 1u128 << 96);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(i32::MAX, 1));
+
+  let num = Num::new(i128::MIN, 1i128 << 96);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(i32::MIN, 1));
+
+  let num = Num::new(i128::MAX, i64::MAX);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(i32::MAX, 1));
+
+  let num = Num::new(i128::MAX, i64::MIN);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(i32::MIN, 1));
+
+  let num = Num::new(1u128 << 64, 1u64 << 33);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(i32::MAX, 1));
+
+  let num = Num::new(1u128 << 64, -(1i64 << 33));
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(i32::MIN, 1));
+}
+
+/// Check that we can approximate a [`Num`] with a [`Num32`], when the
+/// number can be represented without approximation.
+#[test]
+fn num32_approximate_representable_num() {
+  let num = Num::new(1u128 << 64, 1u64 << 34);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(1i32 << 30, 1));
+
+  let num = Num::new(-(1i128 << 64), 1u64 << 34);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(1i32 << 30, -1));
+
+  let num = Num::new(127659574, 1000000000);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(63829787, 500000000));
+
+  let num = Num::new(-127659574, 1000000000);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(-63829787, 500000000));
+
+  let num = Num::new(415, 93);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(415, 93));
+
+  let num = Num::new(20, 3);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(20, 3));
+
+  let num = Num::new(-20, 3);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(-20, 3));
+}
+
+/// Check that we can approximate a [`Num`] with a [`Num32`].
+#[test]
+fn num32_approximate_num() {
+  let num = Num::new(i128::MAX, i128::MAX - 1);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(1, 1));
+
+  let num = Num::new(i128::MIN, i128::MAX - 1);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(-1, 1));
+
+  let num = Num::new(i128::MIN, i128::MIN + 1);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(1, 1));
+
+  let num = Num::new(3 * (i32::MAX as i64), 13);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(1486719448, 3));
+
+  let num = Num::new(-3 * (i32::MAX as i64), 13);
+  let num32 = Num32::approximate(num);
+  assert_eq!(num32, Num32::new(-1486719448, 3));
+}
+
 /// Check that we can convert a [`Num`] into its constituent numerator
 /// and denominator.
 #[test]

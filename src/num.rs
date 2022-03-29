@@ -597,6 +597,76 @@ impl_num! {
   pub struct Num32(Rational32), i32
 }
 
+impl Num32 {
+  /// Approximate a [`Num`] with a `Num32`.
+  ///
+  /// This constructor provides a potentially lossy way of creating a
+  /// `Num32` that approximates the provided [`Num`].
+  ///
+  /// If you want to make sure that no precision is lost (and fail if
+  /// this constraint cannot be upheld), then usage of
+  /// [`Num32::try_from`] is advised.
+  pub fn approximate(num: Num) -> Self {
+    // If the number can directly be represented as a `Num32` we are
+    // trivially done.
+    if let Ok(num32) = Num32::try_from(&num) {
+      return num32
+    }
+
+    let integer = num.to_integer();
+    // Now if the represented value exceeds the range that we can
+    // represent (either in the positive or the negative) then the best
+    // we can do is to "clamp" the value to the representable min/max.
+    if integer >= BigInt::from(i32::MAX) {
+      Num32::from(i32::MAX)
+    } else if integer <= BigInt::from(i32::MIN) {
+      Num32::from(i32::MIN)
+    } else {
+      // Otherwise use the continued fractions algorithm to calculate
+      // the closest representable approximation.
+      match Self::continued_fractions(num, integer) {
+        Ok(num) | Err(num) => num,
+      }
+    }
+  }
+
+  /// Approximate the provided number using the continued fractions
+  /// algorithm as outlined here:
+  /// https://web.archive.org/web/20120223164926/http://mathforum.org/dr.math/faq/faq.fractions.html#decfrac
+  fn continued_fractions(num: Num, integer: BigInt) -> Result<Num32, Num32> {
+    let mut q = num.0;
+    let mut a = integer;
+    let mut n0 = 0i32;
+    let mut d0 = 1i32;
+    let mut n1 = 1i32;
+    let mut d1 = 0i32;
+
+    loop {
+      if q.is_integer() {
+        break Ok(Num32::new(n1, d1))
+      }
+
+      let a32 = a.to_i32();
+      let n = a32
+        .and_then(|n| n.checked_mul(n1))
+        .and_then(|n| n.checked_add(n0))
+        .ok_or_else(|| Num32::new(n1, d1))?;
+      let d = a32
+        .and_then(|n| n.checked_mul(d1))
+        .and_then(|n| n.checked_add(d0))
+        .ok_or_else(|| Num32::new(n1, d1))?;
+
+      n0 = n1;
+      d0 = d1;
+      n1 = n;
+      d1 = d;
+
+      q = (q - a).recip();
+      a = q.to_integer();
+    }
+  }
+}
+
 impl<T> From<T> for Num32
 where
   i32: From<T>,
