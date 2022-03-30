@@ -381,6 +381,20 @@ impl Display for Num {
   }
 }
 
+impl From<Num32> for Num {
+  fn from(other: Num32) -> Num {
+    let (numer, denom) = other.into();
+    Num::new(numer, denom)
+  }
+}
+
+impl From<Num64> for Num {
+  fn from(other: Num64) -> Num {
+    let (numer, denom) = other.into();
+    Num::new(numer, denom)
+  }
+}
+
 impl FromStr for Num {
   type Err = ParseNumError;
 

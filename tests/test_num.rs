@@ -192,6 +192,22 @@ fn num32_approximate_num() {
   assert_eq!(num32, Num32::new(-1486719448, 3));
 }
 
+/// Test that we can convert a [`Num32`] object into a [`Num`].
+#[test]
+fn num_from_num32() {
+  let num32 = Num32::new(10, 3);
+  let num = Num::from(num32);
+  assert_eq!(num, Num::new(10, 3))
+}
+
+/// Test that we can convert a [`Num64`] object into a [`Num`].
+#[test]
+fn num_from_num64() {
+  let num64 = Num64::new(1, 3);
+  let num = Num::from(num64);
+  assert_eq!(num, Num::new(1, 3))
+}
+
 /// Check that we can convert a [`Num`] into its constituent numerator
 /// and denominator.
 #[test]
