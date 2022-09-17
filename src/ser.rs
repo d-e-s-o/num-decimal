@@ -40,13 +40,13 @@ impl From<Sign> for SerdeSign {
   }
 }
 
-impl Into<Sign> for SerdeSign {
+impl From<SerdeSign> for Sign {
   #[inline]
-  fn into(self) -> Sign {
-    match self {
-      Self::Minus => Sign::Minus,
-      Self::NoSign => Sign::NoSign,
-      Self::Plus => Sign::Plus,
+  fn from(other: SerdeSign) -> Self {
+    match other {
+      SerdeSign::Minus => Sign::Minus,
+      SerdeSign::NoSign => Sign::NoSign,
+      SerdeSign::Plus => Sign::Plus,
     }
   }
 }
@@ -69,9 +69,9 @@ impl From<&Num> for SerdeRatio {
   }
 }
 
-impl Into<Num> for SerdeRatio {
-  fn into(self) -> Num {
-    let SerdeRatio(sign, nbytes, dbytes) = self;
+impl From<SerdeRatio> for Num {
+  fn from(other: SerdeRatio) -> Self {
+    let SerdeRatio(sign, nbytes, dbytes) = other;
 
     let numer = BigInt::from_bytes_le(sign.into(), &nbytes);
     let denom = BigInt::from_bytes_le(Sign::Plus, &dbytes);
@@ -102,7 +102,7 @@ impl<'de> Deserialize<'de> for Num {
         E: Error,
       {
         Num::from_str(s)
-          .map_err(|_| Error::invalid_value(Unexpected::Str(&s), &"a stringified integer/float"))
+          .map_err(|_| Error::invalid_value(Unexpected::Str(s), &"a stringified integer/float"))
       }
 
       #[inline]
@@ -173,7 +173,7 @@ mod tests {
   #[test]
   fn deserialize_json_string() {
     let json = r#""37.519""#;
-    let num = from_json::<Num>(&json).unwrap();
+    let num = from_json::<Num>(json).unwrap();
 
     assert_eq!(num, Num::new(37519, 1000));
   }
@@ -181,7 +181,7 @@ mod tests {
   #[test]
   fn deserialize_json_float() {
     let json = r#"126.2633"#;
-    let num = from_json::<Num>(&json).unwrap();
+    let num = from_json::<Num>(json).unwrap();
 
     assert_eq!(num, Num::new(1262633, 10000));
   }
@@ -189,7 +189,7 @@ mod tests {
   #[test]
   fn deserialize_json_int() {
     let json = r#"356"#;
-    let num = from_json::<Num>(&json).unwrap();
+    let num = from_json::<Num>(json).unwrap();
 
     assert_eq!(num, Num::from(356));
   }

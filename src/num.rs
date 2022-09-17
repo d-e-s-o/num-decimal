@@ -113,7 +113,7 @@ fn format_impl(
 
 
 /// An error used for conveying parsing failures.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum ParseNumError {
   /// A string could not get parsed as a `Num`.
   InvalidStrError(String),
