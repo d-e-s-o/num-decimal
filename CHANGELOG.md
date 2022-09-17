@@ -1,3 +1,8 @@
+Unreleased
+----------
+- Bumped required Rust version to `1.46`
+
+
 0.2.5
 -----
 - Introduced `Num32` and `Num64` types with fixed size and limited

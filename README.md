@@ -2,7 +2,7 @@
 [![coverage](https://gitlab.com/d-e-s-o/num-decimal/badges/main/coverage.svg)](https://gitlab.com/d-e-s-o/num-decimal/-/jobs/artifacts/main/file/kcov/kcov-merged/index.html?job=coverage:kcov)
 [![crates.io](https://img.shields.io/crates/v/num-decimal.svg)](https://crates.io/crates/num-decimal)
 [![Docs](https://docs.rs/num-decimal/badge.svg)](https://docs.rs/num-decimal)
-[![rustc](https://img.shields.io/badge/rustc-1.43+-blue.svg)](https://blog.rust-lang.org/2020/04/23/Rust-1.43.0.html)
+[![rustc](https://img.shields.io/badge/rustc-1.46+-blue.svg)](https://blog.rust-lang.org/2020/08/27/Rust-1.46.0.html)
 
 num-decimal
 ===========
