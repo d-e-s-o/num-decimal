@@ -70,3 +70,14 @@ jobs:
           components: clippy
           override: true
       - run: cargo clippy --lib --bins --tests --examples --no-default-features --features=serde,num-v04 -- -A unknown_lints -D warnings
+  rustfmt:
+    name: Check code formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          components: rustfmt
+          override: true
+      - run: cargo +nightly fmt -- --check

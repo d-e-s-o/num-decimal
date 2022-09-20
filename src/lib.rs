@@ -1,10 +1,7 @@
 // Copyright (C) 2019-2022 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#![allow(
-  clippy::let_unit_value,
-  clippy::unreadable_literal,
-)]
+#![allow(clippy::let_unit_value, clippy::unreadable_literal)]
 #![warn(
   bad_style,
   broken_intra_doc_links,
@@ -45,7 +42,7 @@
   unused_qualifications,
   unused_results,
   where_clauses_object_safety,
-  while_true,
+  while_true
 )]
 
 //! A crate containing a number type suitable for use in financial

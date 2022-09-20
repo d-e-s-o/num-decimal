@@ -420,7 +420,7 @@ impl FromStr for Num {
 
     fn parse_str(s: &str, sign: Sign) -> Result<BigInt, ParseNumError> {
       if s.starts_with('-') || s.starts_with('+') {
-        return Err(ParseNumError::InvalidStrError(s.to_owned()));
+        return Err(ParseNumError::InvalidStrError(s.to_owned()))
       }
 
       let num = BigInt::parse_bytes(s.as_bytes(), 10)

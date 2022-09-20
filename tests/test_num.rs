@@ -1,10 +1,7 @@
 // Copyright (C) 2020-2022 Daniel Mueller <deso@posteo.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#![allow(
-  clippy::let_unit_value,
-  clippy::unreadable_literal,
-)]
+#![allow(clippy::let_unit_value, clippy::unreadable_literal)]
 
 use std::convert::TryFrom as _;
 use std::convert::TryInto as _;
@@ -388,9 +385,18 @@ fn num_precision_fill_zeros() {
 
 #[test]
 fn num_minimum_precision() {
-  assert_eq!(format!("{}", Num::new(1, 2).display().min_precision(2)), "0.50");
-  assert_eq!(format!("{}", Num::new(1, 3).display().min_precision(2)), "0.33333333");
-  assert_eq!(format!("{}", Num::new(2, 3).display().min_precision(2)), "0.66666667");
+  assert_eq!(
+    format!("{}", Num::new(1, 2).display().min_precision(2)),
+    "0.50"
+  );
+  assert_eq!(
+    format!("{}", Num::new(1, 3).display().min_precision(2)),
+    "0.33333333"
+  );
+  assert_eq!(
+    format!("{}", Num::new(2, 3).display().min_precision(2)),
+    "0.66666667"
+  );
   assert_eq!(format!("{}", Num::new(1, 3).display()), "0.33333333");
   assert_eq!(format!("{}", Num::new(2, 3).display()), "0.66666667");
   assert_eq!(format!("{:.2}", Num::new(1, 3).display()), "0.33");
