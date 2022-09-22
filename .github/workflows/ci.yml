@@ -81,3 +81,15 @@ jobs:
           components: rustfmt
           override: true
       - run: cargo +nightly fmt -- --check
+  cargo-doc:
+    name: Generate documentation
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: '-A unknown_lints -A renamed_and_removed_lints -D warnings'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - run: cargo doc --no-deps --no-default-features --features=serde,num-v04
