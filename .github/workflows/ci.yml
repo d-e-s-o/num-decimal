@@ -46,19 +46,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-    - uses: actions-rs/tarpaulin@v0.1
-      with:
-        version: latest
-        out-type: Xml
-        args: '--features=serde,num-v04 --no-default-features'
+    - name: Install cargo-llvm-cov
+      uses: taiki-e/install-action@cargo-llvm-cov
+    - name: Test and gather coverage
+      run: cargo llvm-cov --lcov --output-path lcov.info --features=serde,num-v04 --no-default-features
     - name: Upload code coverage results
       uses: codecov/codecov-action@v3
       with:
-        files: cobertura.xml
+        files: lcov.info
   clippy:
     name: Lint with clippy
     runs-on: ubuntu-latest
