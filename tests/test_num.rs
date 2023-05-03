@@ -348,13 +348,13 @@ fn num_format_precision_round() {
 #[test]
 fn num_max_precision() {
   let num = Num::new(1, 3);
-  assert_eq!(num.to_string(), "0.33333333")
+  assert_eq!(num.to_string(), "0.333333333")
 }
 
 #[test]
 fn num_max_precision_with_rounding() {
   let num = Num::new(2, 3);
-  assert_eq!(num.to_string(), "0.66666667")
+  assert_eq!(num.to_string(), "0.666666667")
 }
 
 #[test]
@@ -391,14 +391,14 @@ fn num_minimum_precision() {
   );
   assert_eq!(
     format!("{}", Num::new(1, 3).display().min_precision(2)),
-    "0.33333333"
+    "0.333333333"
   );
   assert_eq!(
     format!("{}", Num::new(2, 3).display().min_precision(2)),
-    "0.66666667"
+    "0.666666667"
   );
-  assert_eq!(format!("{}", Num::new(1, 3).display()), "0.33333333");
-  assert_eq!(format!("{}", Num::new(2, 3).display()), "0.66666667");
+  assert_eq!(format!("{}", Num::new(1, 3).display()), "0.333333333");
+  assert_eq!(format!("{}", Num::new(2, 3).display()), "0.666666667");
   assert_eq!(format!("{:.2}", Num::new(1, 3).display()), "0.33");
   assert_eq!(format!("{:.2}", Num::new(2, 3).display()), "0.67");
 }

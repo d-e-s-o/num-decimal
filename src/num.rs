@@ -40,7 +40,7 @@ use crate::num_rational::Rational64;
 /// Because we base our implementation on rational numbers which can map
 /// to an infinite sequence in the decimal system we have to put an
 /// upper limit on the maximum precision we can display.
-const MAX_PRECISION: usize = 8;
+const MAX_PRECISION: usize = 9;
 
 
 /// Round the given `BigRational` to the nearest integer. Rounding
