@@ -11,8 +11,8 @@ num-decimal
 - [Changelog](CHANGELOG.md)
 
 A crate providing infinite precision decimals with fair rounding and
-other gimmicks based on [`num-rational`][num-decimal].
+other gimmicks based on [`num-rational`][num-rational].
 
 
 [docs-rs]: https://docs.rs/crate/num-decimal
-[num-decimal]: https://crates.io/crates/num-rational
+[num-rational]: https://crates.io/crates/num-rational
