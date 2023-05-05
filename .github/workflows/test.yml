@@ -20,17 +20,13 @@ env:
 
 jobs:
   build:
-    name: Build [${{ matrix.rust }}]
+    name: Build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        rust: [1.46.0, stable]
     steps:
     - uses: actions/checkout@v3
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ matrix.rust }}
+        toolchain: stable
         profile: minimal
         override: true
     - name: Build
@@ -43,6 +39,26 @@ jobs:
         cargo build --lib --tests --features=serde --verbose --release
         cargo build --lib --tests --features=serde,num-v04 --no-default-features --verbose
         cargo build --lib --tests --features=serde,num-v04 --no-default-features --verbose --release
+  build-minimum:
+    name: Build using minimum versions of dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nightly Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+      - run: cargo +nightly -Z minimal-versions update
+      - name: Install minimum Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          # Please adjust README file when bumping version.
+          toolchain: 1.46.0
+          default: true
+      - name: Build
+        run: cargo build --features=serde,num-v04 --no-default-features --locked
   test:
     name: Test and coverage
     runs-on: ubuntu-latest
