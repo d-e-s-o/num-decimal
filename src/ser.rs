@@ -196,10 +196,10 @@ mod tests {
 
   #[test]
   fn serialize_json() {
-    let num = Num::from_str("14827.9102").unwrap();
+    let num = Num::from_str("14827.910289765").unwrap();
     let json = to_json(&num).unwrap();
 
-    assert_eq!(json, r#""14827.9102""#);
+    assert_eq!(json, r#""14827.910289765""#);
   }
 
   /// Check that we can serialize to `bincode` and back.
