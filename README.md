@@ -1,4 +1,4 @@
-[![pipeline](https://github.com/d-e-s-o/num-decimal/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/d-e-s-o/num-decimal/actions/workflows/ci.yml)
+[![pipeline](https://github.com/d-e-s-o/num-decimal/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/d-e-s-o/num-decimal/actions/workflows/test.yml)
 [![coverage](https://codecov.io/gh/d-e-s-o/num-decimal/branch/main/graph/badge.svg)](https://codecov.io/gh/d-e-s-o/num-decimal)
 [![crates.io](https://img.shields.io/crates/v/num-decimal.svg)](https://crates.io/crates/num-decimal)
 [![Docs](https://docs.rs/num-decimal/badge.svg)](https://docs.rs/num-decimal)
